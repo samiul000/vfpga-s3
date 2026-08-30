@@ -217,7 +217,10 @@ AstNode Parser::parse_if() {
         node.sub_nodes.push_back(then_block);
         node.child_idx.push_back(-1);
     } else {
+        AstNode target = parse_primary();
         AstNode then_stmt = parse_assign_le();
+        then_stmt.name = target.name;
+        if (!target.children.empty()) then_stmt.children = target.children;
         node.sub_nodes.push_back(then_stmt);
     }
 
@@ -226,7 +229,10 @@ AstNode Parser::parse_if() {
             AstNode else_block = parse_begin_block();
             node.sub_nodes.push_back(else_block);
         } else {
+            AstNode target2 = parse_primary();
             AstNode else_stmt = parse_assign_le();
+            else_stmt.name = target2.name;
+            if (!target2.children.empty()) else_stmt.children = target2.children;
             node.sub_nodes.push_back(else_stmt);
         }
     }

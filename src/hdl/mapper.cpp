@@ -48,7 +48,7 @@ uint16_t Mapper::truth_table_for_op(const std::string &op) const {
     if (op == "==") return 0x8000;
     if (op == "!=") return 0x7FFF;
     // MUX: a=then(bit0), b=else(bit1), c=cond(bit2)
-    // c=0 -> a(then), c=1 -> b(else): bits 1,3,6,7 = 0xCA
+    // c=0 -> a(then), c=1 -> b(else)
     if (op == "MUX") return 0x00CA;
     // NOT(a): a=bit0, output=!a for all b,c,d combos: bits 0,2,4,6,8,10,12,14 = 0x5555
     if (op == "!") return 0x5555;

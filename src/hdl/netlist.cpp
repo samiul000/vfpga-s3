@@ -275,74 +275,20 @@ void Netlist::build_from_ast(const std::vector<AstNode> &ast) {
                             components_.push_back(else_comp);
 
                             // MUX LUT: cond ? then_val : else_val
-                            // truth table: cond(bit0)=0 -> else, cond=1 -> then
-                            // idx: val_a(bit1) | val_b(bit2) | cond(bit0)
-                            // d=0: output=else; d=1: output=then -> truth table 0xA
-                            // Actually: sel=cond, when cond=0 -> else, cond=1 -> then
-                            // idx bit0=cond: cond=0 -> else (bit1=val_b), cond=1 -> then (bit2=val_a)
-                            // bits: 2,3,6,7,10,11,14,15 for then; bits 0,1,4,5,8,9,12,13 for else
-                            // = 0xF0F0 for cond as sel... let me use 0xCC for simplicity
-                            // sel=bit0: 0->else, 1->then: truth table bits where output=1:
-                            // cond=1: idx 1,3,5,7,9,11,13,15 -> then
-                            // cond=0: idx 0,2,4,6,8,10,12,14 -> else
-                            // MUX: cond=1->then(cond=bit0), then is on val_a(bit1), else is on val_b(bit2)
-                            // For MUX(cond, then_val, else_val) with a=then_val, b=else_val, d=cond:
-                            // cond=0->b(else), cond=1->a(then): truth table 0xAAAA (bit0=cond -> when 1, output=a)
-                            // Wait: a(bit0), b(bit1), c(ignored), d(cond=bit3)
-                            // Actually I need to be more careful. Let me use a simpler approach.
-                            // MUX: inputs[0]=then_val, inputs[1]=else_val, inputs[2]=cond
-                            // When cond=0: output=else_val; when cond=1: output=then_val
-                            // With a=then_val(bit0), b=else_val(bit1), d=cond(bit2)
-                            // idx: a|2b|4d
-                            // d=0: idx 0(a=0,b=0)->0, 1(a=1,b=0)->1(then), 2(a=0,b=1)->0(else), 3(a=1,b=1)->1
-                            // d=1: idx 4(a=0,b=0)->0, 5(a=1,b=0)->1(then), 6(a=0,b=1)->0(else), 7(a=1,b=1)->1
-                            // Hmm that's just a. Let me use a different mapping.
-                            // a=then_val, b=else_val, d=cond. Use d as bit3, a as bit0, b as bit1
-                            // cond=0(d=0): output=else=b, cond=1(d=1): output=then=a
-                            // d=0: idx 0->0, 1->1(a), 2->0(b=0), 3->1(a)
-                            // d=1: idx 8->0, 9->0(a=0), 10->1(b=1), 11->1
-                            // bits: 1,3,10,11 = 0x0C8A... this is getting complicated
-                            // Let me just use the PASS truth table approach differently.
-                            // Simplest: 3-input MUX with a=then, b=else, sel=cond
-                            // I'll use truth table 0xF0F0: when cond=1->then, cond=0->else
-                            // Actually let me just use: cond as bit0, then_val as bit1, else_val as bit2
-                            // MUX: cond=0->else_val(bit2), cond=1->then_val(bit1)
-                            // idx: cond(bit0)|then(bit1)|else(bit2)
-                            // 0(0,0,0)->0, 1(1,0,0)->0, 2(0,1,0)->1(then), 3(1,1,0)->1(then)
-                            // 4(0,0,1)->1(else), 5(1,0,1)->1(else), 6(0,1,1)->1, 7(1,1,1)->1
-                            // bits 2,3,4,5,6,7 = 0xFC... no that's not right either
-                            // OK let me just use: cond as bit2, then as bit0, else as bit1
-                            // cond=0: output=else(bit1), cond=1: output=then(bit0)
-                            // idx: then(bit0)|else(bit1)|cond(bit2)
-                            // 0(0,0,0)->0, 1(1,0,0)->1(then), 2(0,1,0)->1(else), 3(1,1,0)->1
-                            // 4(0,0,1)->0, 5(1,0,1)->1(then), 6(0,1,1)->0, 7(1,1,1)->1
-                            // bits: 1,2,3,5,7 = 0xAE... still not right
-                            // cond=0(d=0): want else; cond=1(d=1): want then
-                            // d is bit2: d=0 -> idx 0-3, d=1 -> idx 4-7
-                            // d=0: idx 0(000)->else=0, 1(001)->then=1, 2(010)->else=1, 3(011)->then=1
-                            // d=1: idx 4(100)->then=0, 5(101)->then=1, 6(110)->else=0, 7(111)->then=1
-                            // output=then when d=1 or (d=0 and then=1 and else=0)... this is wrong
-                            // Let me just hardcode: MUX with sel=cond, a=then, b=else
-                            // Using the same scheme as the test MUX but with 3 inputs:
-                            // Actually, let me use a simpler scheme.
-                            // cond(bit2), then_val(bit0), else_val(bit1)
-                            // When cond=0: output = else_val (regardless of then_val)
-                            // When cond=1: output = then_val (regardless of else_val)
-                            // idx: then(bit0)|else(bit1)|cond(bit2)
-                            // cond=0 (bit2=0): idx 0->0, 1->1(then), 2->1(else), 3->1
-                            //   But we want: cond=0 -> else_val, so idx 0->0, 1->0, 2->1, 3->1
-                            // cond=1 (bit2=1): idx 4->0, 5->1(then), 6->0, 7->1
-                            //   We want: cond=1 -> then_val, so idx 4->0, 5->1, 6->0, 7->1
-                            // bits: 2,3,5,7 = 0xAC
+                            // Truth table 0x00CA: a(bit0)=else, b(bit1)=then, c(bit2)=cond
+                            // c=0 -> a(else), c=1 -> b(then)
+                            // 4th input (d) must be tied to GND to avoid clock leaking in
                             uint16_t mux_out = ensure_net("_mux_" + std::to_string(reg_id));
+                            uint16_t gnd_net = ensure_net("GND");
                             NetlistComponent mux_comp;
                             mux_comp.type = NetlistComponent::Type::LUT4;
                             mux_comp.id = static_cast<uint16_t>(components_.size());
                             mux_comp.op = "MUX";
                             mux_comp.output = mux_out;
-                            mux_comp.inputs.push_back(then_out);
                             mux_comp.inputs.push_back(else_out);
+                            mux_comp.inputs.push_back(then_out);
                             mux_comp.inputs.push_back(cond_out);
+                            mux_comp.inputs.push_back(gnd_net);
                             components_.push_back(mux_comp);
 
                             // FF: D = mux_out, Q = reg
