@@ -1,0 +1,10 @@
+# Python venv
+.venv/
+
+# IDE
+.idea/
+
+# Build output
+build/
+sdkconfig
+sdkconfig.old
