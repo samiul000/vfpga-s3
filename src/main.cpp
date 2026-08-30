@@ -104,30 +104,67 @@ static void run_hdl_pipeline(const char *name, const char *hdl_source) {
     core.load_config(cfg);
 
     if (name == std::string("and_gate")) {
-        core.write_input(1, 0xFFFFFFFF);
-        core.write_input(2, 0xFFFFFFFF);
+        int16_t a_id = netlist.resolve("a");
+        int16_t b_id = netlist.resolve("b");
+        int16_t y_id = netlist.resolve("y");
+        ESP_LOGI(TAG, "Nets: a=%d, b=%d, y=%d", a_id, b_id, y_id);
+
+        core.write_input(a_id, 0xFFFFFFFF);
+        core.write_input(b_id, 0xFFFFFFFF);
         core.evaluate_combinational();
-        VSignal y = core.read_output(3);
+        VSignal y = core.read_signal(y_id);
         ESP_LOGI(TAG, "AND(1,1) = %d (expected 1)", y & 1);
 
-        core.write_input(1, 0xFFFFFFFF);
-        core.write_input(2, 0);
+        core.write_input(a_id, 0xFFFFFFFF);
+        core.write_input(b_id, 0);
         core.evaluate_combinational();
-        y = core.read_output(3);
+        y = core.read_signal(y_id);
         ESP_LOGI(TAG, "AND(1,0) = %d (expected 0)", y & 1);
     } else if (name == std::string("counter")) {
-        ESP_LOGI(TAG, "Running 10 clock cycles...");
-        core.write_input(2, 1);
-        core.run_cycles(1);
-        core.write_input(2, 0);
+        int16_t clk_id = netlist.resolve("clock");
+        int16_t rst_id = netlist.resolve("reset");
+        int16_t cnt_id = netlist.resolve("count");
+        ESP_LOGI(TAG, "Nets: clock=%d, reset=%d, count=%d", clk_id, rst_id, cnt_id);
 
+        ESP_LOGI(TAG, "Asserting reset...");
+        core.write_input(rst_id, 1);
+        core.write_input(clk_id, 0);
+        core.evaluate_combinational();
+        core.clock();
+        core.write_input(rst_id, 0);
+
+        ESP_LOGI(TAG, "Running 10 clock cycles...");
         for (int cycle = 0; cycle < 10; ++cycle) {
-            core.write_input(1, 1);
-            core.run_cycles(1);
-            core.write_input(1, 0);
-            core.run_cycles(1);
-            VSignal count = core.read_output(3);
+            core.write_input(clk_id, 1);
+            core.evaluate_combinational();
+            core.clock();
+            VSignal count = core.read_signal(cnt_id);
             ESP_LOGI(TAG, "Cycle %d: count = %d", cycle + 1, count & 0xFF);
+            core.write_input(clk_id, 0);
+            core.evaluate_combinational();
+        }
+    } else if (name == std::string("lfsr")) {
+        int16_t clk_id = netlist.resolve("clock");
+        int16_t rst_id = netlist.resolve("reset");
+        int16_t st_id = netlist.resolve("state");
+        ESP_LOGI(TAG, "Nets: clock=%d, reset=%d, state=%d", clk_id, rst_id, st_id);
+
+        ESP_LOGI(TAG, "Asserting reset...");
+        core.write_input(rst_id, 1);
+        core.write_input(clk_id, 0);
+        core.evaluate_combinational();
+        core.clock();
+        core.write_input(rst_id, 0);
+
+        ESP_LOGI(TAG, "Running 5 cycles...");
+        for (int cycle = 0; cycle < 5; ++cycle) {
+            core.write_input(clk_id, 1);
+            core.evaluate_combinational();
+            core.clock();
+            VSignal state = core.read_signal(st_id);
+            ESP_LOGI(TAG, "Cycle %d: state = 0x%02X", cycle + 1, state & 0xFF);
+            core.write_input(clk_id, 0);
+            core.evaluate_combinational();
         }
     }
     ESP_LOGI(TAG, "");
@@ -136,7 +173,7 @@ static void run_hdl_pipeline(const char *name, const char *hdl_source) {
 static void run_demo_lut() {
     ESP_LOGI(TAG, "=== Demo: LUT4 as AND gate ===");
     VLut4 lut;
-    lut.configure(0x8000); // AND truth table
+    lut.configure(0x08); // 2-input AND: idx=a|2b, only 11->1 = bit3 = 0x08
     VSignal a = 0xFFFFFFFF;
     VSignal b = 0xFFFFFFFF;
     VSignal result = lut.evaluate(a, b, 0, 0);

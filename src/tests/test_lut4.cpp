@@ -36,9 +36,9 @@ void test_lut4() {
     if (result == 0xFFFFFFFF) { ESP_LOGI(TAG, "[PASS] OR gate (a=1)"); pass++; }
     else { ESP_LOGE(TAG, "[FAIL] OR gate (a=1): 0x%08X", result); fail++; }
 
-    // XOR gate (2-input): truth table = 0x6C (inputs a,b: 00->0, 01->1, 10->1, 11->0)
-    // With c=d=0, truth table bits: idx = a|2b, so 0x6C = 01101100
-    lut.configure(0x6C);
+    // XOR gate (2-input): with c=d=0, idx = a|2b
+    // 00->0, 01->1, 10->1, 11->0 -> bits 1,2 set = 0x06
+    lut.configure(0x06);
     a = 0xFFFFFFFF; b = 0xFFFFFFFF; c = 0x00000000; d = 0x00000000;
     result = lut.evaluate(a, b, c, d);
     if (result == 0x00000000) { ESP_LOGI(TAG, "[PASS] XOR gate (1^1=0)"); pass++; }
@@ -81,39 +81,11 @@ void test_lut4() {
     if (result == 0xFFFFFFFF) { ESP_LOGI(TAG, "[PASS] CONST 1"); pass++; }
     else { ESP_LOGE(TAG, "[FAIL] CONST 1: 0x%08X", result); fail++; }
 
-    // MUX: y = a when d=0, y = b when d=1
-    // truth table: d=0 -> idx has d=0 -> use a bit; d=1 -> idx has d=1 -> use b bit
+    // MUX: sel=d, out = d ? b : a
     // idx bits: a(bit0) | b(bit1) | c(bit2) | d(bit3)
-    // d=0: idx 0(a0,b0) -> a, idx 2(a1,b0) -> a -> output a
-    // d=1: idx 8(a0,b0,d1) -> b, idx 10(a1,b0,d1) -> b -> output b
-    // truth table for MUX: 0xCA = 11001010 (a=bit0, b=bit1, c=0, d=sel)
-    // Actually let's use simpler: MUX2 with a,b,sel=d
-    // When d=0: output = a; when d=1: output = b
-    // truth table: for each (a,b,c,d) combo:
     // d=0: output=a; d=1: output=b
-    // bit0=a, bit1=b, bit2=c, bit3=d
-    // idx=0 (0000): a=0,b=0 -> 0
-    // idx=1 (0001): a=1,b=0 -> 1 (a)
-    // idx=2 (0010): a=0,b=1 -> 0 (a)
-    // idx=3 (0011): a=1,b=1 -> 1 (a)
-    // idx=4 (0100): a=0,b=0 -> 0
-    // idx=5 (0101): a=1,b=0 -> 1 (a)
-    // idx=6 (0110): a=0,b=1 -> 0 (a)
-    // idx=7 (0111): a=1,b=1 -> 1 (a)
-    // idx=8 (1000): a=0,b=0 -> 0
-    // idx=9 (1001): a=1,b=0 -> 0 (b=0)
-    // idx=10 (1010): a=0,b=1 -> 1 (b=1)
-    // idx=11 (1011): a=1,b=1 -> 1 (b=1)
-    // idx=12 (1100): a=0,b=0 -> 0
-    // idx=13 (1101): a=1,b=0 -> 0
-    // idx=14 (1110): a=0,b=1 -> 1
-    // idx=15 (1111): a=1,b=1 -> 1
-    // truth table: 0b1100101001100010 = 0xCA62... wait let me recalc
-    // bits: 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1 0
-    //       1  1  0  0  1  0  1 0 1 0 0 0 1 0 1 0 = 0xCA8A
-    // Hmm, let me just use a known MUX truth table
-    // Simple MUX: sel=d, out = d ? b : a
-    lut.configure(0xCA8A);
+    // bits set: 1,3,5,7 (d=0, output=a) + 10,11,14,15 (d=1, output=b) = 0xCCAA
+    lut.configure(0xCCAA);
     a = 0xAAAAAAAA; b = 0x55555555; c = 0x00000000; d = 0x00000000;
     result = lut.evaluate(a, b, c, d);
     if (result == 0xAAAAAAAA) { ESP_LOGI(TAG, "[PASS] MUX (sel=0 -> a)"); pass++; }

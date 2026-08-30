@@ -42,8 +42,14 @@ void VFpgaCore::load_config(const MappedConfig &cfg) {
         ff_count_++;
     }
 
-    ESP_LOGI(TAG, "Loaded config: %zu LUTs, %zu FFs, %zu nets",
-             lut_count_, ff_count_, cfg.total_nets);
+    for (const auto &[net_id, value] : cfg.constants) {
+        if (net_id < MAX_SIGNALS) {
+            signals_[net_id] = value;
+        }
+    }
+
+    ESP_LOGI(TAG, "Loaded config: %zu LUTs, %zu FFs, %zu nets, %zu constants",
+             lut_count_, ff_count_, cfg.total_nets, cfg.constants.size());
 }
 
 void VFpgaCore::evaluate_combinational() {

@@ -19,6 +19,7 @@ struct AstNode {
     std::string op;
     std::vector<std::string> children;
     std::vector<int32_t> child_idx;
+    std::vector<AstNode> sub_nodes;
     int32_t bit_index = -1;
     int32_t msb = -1, lsb = -1;
 };

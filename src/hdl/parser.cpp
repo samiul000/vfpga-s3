@@ -184,8 +184,13 @@ AstNode Parser::parse_assign_le() {
     advance(); // <=
 
     AstNode expr = parse_expr();
-    node.children.push_back(expr.name);
     node.op = expr.op;
+    // Copy all children from expression (handles binary ops like count + 1)
+    if (!expr.children.empty()) {
+        node.children = expr.children;
+    } else if (!expr.name.empty()) {
+        node.children.push_back(expr.name);
+    }
 
     if (check(TokenType::SEMICOLON)) advance();
     return node;
@@ -198,22 +203,31 @@ AstNode Parser::parse_if() {
 
     expect(TokenType::LPAREN, "(");
     AstNode cond = parse_expr();
-    node.children.push_back(cond.name);
-    node.op = cond.op;
+    if (cond.type == AstNode::Type::EXPR_NOT && !cond.children.empty()) {
+        node.children.push_back(cond.children[0]);
+        node.op = "!";
+    } else {
+        node.children.push_back(cond.name);
+        node.op = cond.op;
+    }
     expect(TokenType::RPAREN, ")");
 
     if (check(TokenType::KW_BEGIN)) {
         AstNode then_block = parse_begin_block();
+        node.sub_nodes.push_back(then_block);
         node.child_idx.push_back(-1);
     } else {
         AstNode then_stmt = parse_assign_le();
+        node.sub_nodes.push_back(then_stmt);
     }
 
     if (match(TokenType::KW_ELSE)) {
         if (check(TokenType::KW_BEGIN)) {
             AstNode else_block = parse_begin_block();
+            node.sub_nodes.push_back(else_block);
         } else {
             AstNode else_stmt = parse_assign_le();
+            node.sub_nodes.push_back(else_stmt);
         }
     }
     return node;
@@ -227,9 +241,13 @@ AstNode Parser::parse_begin_block() {
     while (!check(TokenType::KW_END) && !check(TokenType::END_OF_FILE)) {
         if (check(TokenType::KW_IF)) {
             AstNode child = parse_if();
+            node.sub_nodes.push_back(child);
         } else if (check(TokenType::IDENT) || check(TokenType::LBRACKET)) {
             AstNode target = parse_primary();
             AstNode stmt = parse_assign_le();
+            stmt.name = target.name;
+            if (!target.children.empty()) stmt.children = target.children;
+            node.sub_nodes.push_back(stmt);
         } else {
             advance();
         }
@@ -243,6 +261,7 @@ AstNode Parser::parse_always() {
     node.type = AstNode::Type::ALWAYS_POSEDGE;
     advance(); // always
 
+    match(TokenType::AT); // skip @
     expect(TokenType::LPAREN, "(");
     match(TokenType::KW_POSEDGE);
     node.name = advance().text;
@@ -252,9 +271,15 @@ AstNode Parser::parse_always() {
     while (!check(TokenType::KW_END) && !check(TokenType::END_OF_FILE)) {
         if (check(TokenType::KW_IF)) {
             AstNode if_node = parse_if();
-        } else {
+            node.sub_nodes.push_back(if_node);
+        } else if (check(TokenType::IDENT) || check(TokenType::LBRACKET)) {
             AstNode target = parse_primary();
             AstNode stmt = parse_assign_le();
+            stmt.name = target.name;
+            if (!target.children.empty()) stmt.children = target.children;
+            node.sub_nodes.push_back(stmt);
+        } else {
+            advance();
         }
     }
     expect(TokenType::KW_END, "end");
@@ -280,7 +305,10 @@ std::vector<AstNode> Parser::parse(const std::vector<Token> &tokens) {
             AstNode node;
             node.type = AstNode::Type::ASSIGN;
             node.name = target.name;
-            node.children.push_back(expr.name);
+            node.children = expr.children;
+            if (node.children.empty() && !expr.name.empty()) {
+                node.children.push_back(expr.name);
+            }
             node.op = expr.op;
             if (check(TokenType::SEMICOLON)) advance();
             ast.push_back(node);

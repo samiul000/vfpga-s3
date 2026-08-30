@@ -1,17 +1,57 @@
 #include "mapper.h"
 #include "esp_log.h"
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 static const char *TAG = "mapper";
 
+static uint32_t parse_hdl_constant(const std::string &name) {
+    if (name.size() >= 3 && name[1] == '\'') {
+        char base = name[2];
+        const char *val = name.c_str() + 3;
+        if (base == 'h' || base == 'H') return (uint32_t)strtol(val, nullptr, 16);
+        if (base == 'b' || base == 'B') return (uint32_t)strtol(val, nullptr, 2);
+        return (uint32_t)strtol(val, nullptr, 10);
+    }
+    if (name.size() >= 2 && name[0] == '0' && (name[1] == 'x' || name[1] == 'X'))
+        return (uint32_t)strtol(name.c_str(), nullptr, 16);
+    bool all_digits = true;
+    for (char c : name) if (!isdigit((unsigned char)c)) { all_digits = false; break; }
+    if (all_digits && !name.empty()) return (uint32_t)strtol(name.c_str(), nullptr, 10);
+    return 0;
+}
+
+static bool is_hdl_constant(const std::string &name) {
+    if (name.size() >= 3 && name[1] == '\'') {
+        char base = name[2];
+        return base == 'h' || base == 'H' || base == 'b' || base == 'B' || isdigit((unsigned char)base);
+    }
+    if (name.size() >= 2 && name[0] == '0' && (name[1] == 'x' || name[1] == 'X')) return true;
+    bool all_digits = true;
+    for (char c : name) if (!isdigit((unsigned char)c)) { all_digits = false; break; }
+    return all_digits && !name.empty();
+}
+
 uint16_t Mapper::truth_table_for_op(const std::string &op) const {
+    // idx bits: a(bit0) | b(bit1) | c(bit2) | d(bit3)
+    // AND: only 1111->1 = bit15 = 0x8000
     if (op == "&") return 0x8000;
-    if (op == "|") return 0xFE00;
-    if (op == "^") return 0x6969;
+    // OR: all except 0000->0 = bits 1-15 = 0xFFFE
+    if (op == "|") return 0xFFFE;
+    // XOR(a,b): bits 1,2,5,6,9,10,13,14 = 0x6666
+    if (op == "^") return 0x6666;
+    // PASS(a): bits where a=1 = 0xAAAA
     if (op == "PASS") return 0xAAAA;
-    if (op == "+") return 0x6969;
+    // ADD: same as XOR for sum bit (no carry)
+    if (op == "+") return 0x6666;
     if (op == "==") return 0x8000;
     if (op == "!=") return 0x7FFF;
+    // MUX: a=then(bit0), b=else(bit1), c=cond(bit2)
+    // c=0 -> a(then), c=1 -> b(else): bits 1,3,6,7 = 0xCA
+    if (op == "MUX") return 0x00CA;
+    // NOT(a): a=bit0, output=!a for all b,c,d combos: bits 0,2,4,6,8,10,12,14 = 0x5555
+    if (op == "!") return 0x5555;
     ESP_LOGW(TAG, "Unknown op '%s', using AND", op.c_str());
     return 0x8000;
 }
@@ -48,8 +88,15 @@ MappedConfig Mapper::map_to_luts(const Netlist &netlist) {
         }
     }
 
-    ESP_LOGI(TAG, "Mapped: %zu LUTs, %zu FFs, %zu nets",
-             cfg.luts.size(), cfg.ffs.size(), cfg.total_nets);
+    for (size_t i = 0; i < netlist.net_count(); ++i) {
+        const auto &net = netlist.get_net(i);
+        if (is_hdl_constant(net.name)) {
+            cfg.constants.push_back({net.id, parse_hdl_constant(net.name)});
+        }
+    }
+
+    ESP_LOGI(TAG, "Mapped: %zu LUTs, %zu FFs, %zu nets, %zu constants",
+             cfg.luts.size(), cfg.ffs.size(), cfg.total_nets, cfg.constants.size());
     return cfg;
 }
 

@@ -34,6 +34,7 @@ Token Lexer::next_token(const std::string &source, size_t &pos, size_t &line) {
     if (c == ';') { ++pos; return {TokenType::SEMICOLON, ";", line}; }
     if (c == ',') { ++pos; return {TokenType::COMMA, ",", line}; }
     if (c == ':') { ++pos; return {TokenType::COLON, ":", line}; }
+    if (c == '@') { ++pos; return {TokenType::AT, "@", line}; }
     if (c == '&') { ++pos; return {TokenType::OP_AND, "&", line}; }
     if (c == '|') { ++pos; return {TokenType::OP_OR, "|", line}; }
     if (c == '^') { ++pos; return {TokenType::OP_XOR, "^", line}; }

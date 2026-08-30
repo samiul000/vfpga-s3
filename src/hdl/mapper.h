@@ -22,6 +22,7 @@ struct MappedConfig {
     std::vector<MappedFf> ffs;
     std::vector<uint16_t> input_net_ids;
     std::vector<uint16_t> output_net_ids;
+    std::vector<std::pair<uint16_t, uint32_t>> constants;
     uint16_t total_nets;
 };
 
