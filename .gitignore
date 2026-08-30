@@ -42,3 +42,6 @@ desktop.ini
 # Debug
 *.dSYM/
 *.su
+
+# Extras
+INSTRUCTION.md
