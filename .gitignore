@@ -1,10 +1,44 @@
 # Python venv
 .venv/
+__pycache__/
+*.pyc
 
 # IDE
 .idea/
+.vscode/
+*.swp
+*.swo
+*~
 
-# Build output
+# ESP-IDF build output
 build/
 sdkconfig
 sdkconfig.old
+dependencies.lock
+managed_components/
+export/
+
+# C/C++ build artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.lib
+*.exp
+*.pdb
+
+# Compiled binaries
+*.elf
+*.bin
+*.hex
+*.map
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Debug
+*.dSYM/
+*.su
