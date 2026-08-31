@@ -21,7 +21,7 @@ void test_dualcore_benchmark() {
 
     // Single-core
     VFpgaCore core_sc;
-    core_sc.initialize();
+    core_sc.init();
     t1 = esp_timer_get_time();
     core_sc.run_cycles(CYCLES);
     t2 = esp_timer_get_time();
@@ -30,7 +30,7 @@ void test_dualcore_benchmark() {
 
     // Dual-core
     VFpgaCore core_dc;
-    core_dc.initialize();
+    core_dc.init();
     t1 = esp_timer_get_time();
     xTaskCreatePinnedToCore(vfpga_worker_task, "vfpga_dc", 4096, &core_dc, 1, NULL, 1);
     vTaskDelay(pdMS_TO_TICKS(500));

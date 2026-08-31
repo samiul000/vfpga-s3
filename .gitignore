@@ -45,3 +45,5 @@ desktop.ini
 
 # Extras
 INSTRUCTION.md
+docs/generate_graphics.py
+docs/gen_abstract.py

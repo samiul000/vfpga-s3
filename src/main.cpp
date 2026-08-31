@@ -100,7 +100,7 @@ static void run_hdl_pipeline(const char *name, const char *hdl_source) {
     ESP_LOGI(TAG, "Mapper: %zu LUTs, %zu FFs", cfg.luts.size(), cfg.ffs.size());
 
     VFpgaCore core;
-    core.initialize();
+    core.init();
     core.load_config(cfg);
 
     if (name == std::string("and_gate")) {
@@ -324,6 +324,7 @@ extern "C" void app_main(void)
     // M1-M4 tests
     test_bitparallel();
     test_lut4();
+    test_lut4_4k_benchmark();
     test_flipflop();
     test_routing();
 

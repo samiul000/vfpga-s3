@@ -24,7 +24,13 @@ struct MappedConfig;
 
 class VFpgaCore {
 public:
-    void initialize();
+    VFpgaCore() = default;
+    ~VFpgaCore();
+    VFpgaCore(const VFpgaCore&) = delete;
+    VFpgaCore& operator=(const VFpgaCore&) = delete;
+
+    void init(size_t max_signals = 4096, size_t max_luts = 4096, size_t max_ffs = 4096);
+    void destroy();
     void reset();
     void load_config(const MappedConfig &cfg);
 
@@ -39,15 +45,17 @@ public:
 
     size_t lut_count() const;
     size_t ff_count() const;
+    size_t max_signals() const;
+    size_t max_luts() const;
 
 private:
-    static constexpr size_t MAX_SIGNALS = 256;
-    static constexpr size_t MAX_LUTS = 64;
-    static constexpr size_t MAX_FFS = 64;
-
-    VSignal signals_[MAX_SIGNALS]{};
-    CoreLut luts_[MAX_LUTS]{};
-    CoreFf ffs_[MAX_FFS]{};
+    VSignal *signals_ = nullptr;
+    CoreLut *luts_ = nullptr;
+    CoreFf *ffs_ = nullptr;
+    size_t max_signals_ = 0;
+    size_t max_luts_ = 0;
+    size_t max_ffs_ = 0;
     size_t lut_count_ = 0;
     size_t ff_count_ = 0;
+    bool initialized_ = false;
 };

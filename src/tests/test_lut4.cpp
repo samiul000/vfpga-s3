@@ -1,6 +1,11 @@
 #include "test_framework.h"
 #include "vfpga/vfpga_lut.h"
+#include "vfpga/vfpga_core.h"
+#include "hdl/mapper.h"
 #include "esp_log.h"
+#include "esp_timer.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 static const char *TAG = "test_lut";
 
@@ -98,5 +103,59 @@ void test_lut4() {
 
     ESP_LOGI(TAG, "");
     ESP_LOGI(TAG, "LUT4: %d passed, %d failed", pass, fail);
+    ESP_LOGI(TAG, "");
+}
+
+void test_lut4_4k_benchmark() {
+    ESP_LOGI(TAG, "=== LUT4: 4K Scaling Benchmark ===");
+
+    // Create a MappedConfig with N LUTs forming a chain: lut[i] = lut[i-1] XOR lut[i-2]
+    // This tests scaling — each LUT reads from 2 previous outputs
+    for (int N : {64, 256, 1024, 2048, 4096}) {
+        MappedConfig cfg;
+        cfg.total_nets = N + 10;
+        cfg.constants = {};
+
+        // Input signals
+        uint16_t sig_a = N + 0;
+        uint16_t sig_b = N + 1;
+        cfg.constants.push_back({sig_a, 0xFFFFFFFF});
+        cfg.constants.push_back({sig_b, 0xAAAAAAAA});
+
+        for (int i = 0; i < N; ++i) {
+            MappedLut ml;
+            ml.id = i;
+            ml.truth_table = 0x6666; // XOR
+            if (i == 0) {
+                ml.input_net_ids = {sig_a, sig_b, 0, 0};
+            } else if (i == 1) {
+                ml.input_net_ids = {(uint16_t)(i - 1 + 0), sig_a, 0, 0};
+            } else {
+                ml.input_net_ids = {(uint16_t)(i - 1 + 0), (uint16_t)(i - 2 + 0), 0, 0};
+            }
+            ml.output_net_id = i;
+            cfg.luts.push_back(ml);
+        }
+
+        VFpgaCore core;
+        core.init(N + 10, N + 10, 0);
+        core.load_config(cfg);
+
+        // Benchmark: scale iterations inversely with N to avoid watchdog
+        int ITERS = (N <= 256) ? 10000 : (N <= 1024) ? 1000 : (N <= 2048) ? 200 : 50;
+        int64_t t1 = esp_timer_get_time();
+        for (int iter = 0; iter < ITERS; ++iter) {
+            core.evaluate_combinational();
+            if ((iter & 0xFF) == 0) vTaskDelay(1); // feed watchdog every 256 iters
+        }
+        int64_t t2 = esp_timer_get_time();
+
+        double total_us = t2 - t1;
+        double per_eval_us = total_us / ITERS;
+        double kcps = ITERS / total_us * 1000.0;
+
+        ESP_LOGI(TAG, "N=%4d: %.1f us/eval, %.1f Keval/s, %zu LUTs, %zu FFs",
+                 N, per_eval_us, kcps, core.lut_count(), core.ff_count());
+    }
     ESP_LOGI(TAG, "");
 }

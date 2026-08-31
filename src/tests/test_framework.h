@@ -4,6 +4,7 @@
 
 void test_bitparallel();
 void test_lut4();
+void test_lut4_4k_benchmark();
 void test_flipflop();
 void test_routing();
 void test_bram_benchmark();
