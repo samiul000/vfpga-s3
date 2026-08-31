@@ -22,6 +22,12 @@ void RiscvCpu::run(uint32_t instructions) {
     for (uint32_t i = 0; i < instructions; ++i) step();
 }
 
+void RiscvCpu::load_program(uint32_t addr, const uint32_t *data, size_t count) {
+    for (size_t i = 0; i < count; ++i) {
+        mem_.write_word(addr + i * 4, data[i]);
+    }
+}
+
 uint32_t RiscvCpu::get_pc() const { return pc_; }
 
 uint32_t RiscvCpu::get_reg(uint8_t idx) const {

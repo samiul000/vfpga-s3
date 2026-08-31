@@ -9,6 +9,7 @@ public:
     void reset();
     void step();
     void run(uint32_t instructions);
+    void load_program(uint32_t addr, const uint32_t *data, size_t count);
     uint32_t get_pc() const;
     uint32_t get_reg(uint8_t idx) const;
 

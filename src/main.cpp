@@ -238,24 +238,16 @@ static void run_demo_riscv() {
         0x00A00613, // addi x12, x0, 10     (limit = 10)
         0x00B50533, // add  x10, x10, x11   (sum += i)
         0x00158593, // addi x11, x11, 1     (i++)
-        0xFEC5CCE3, // bge  x12, x11, -12   (if limit >= i, goto add)
+        0xFEB65CE3, // bge  x12, x11, -8    (if limit >= i, goto add)
         0x00000013, // nop
     };
 
-    for (size_t i = 0; i < sizeof(program) / sizeof(program[0]); ++i) {
-        cpu.get_pc(); // ensure PC is accessible
-        // Manually store program
-        // We'll use the memory directly
-    }
+    cpu.load_program(0, program, sizeof(program) / sizeof(program[0]));
+    cpu.run(100); // run up to 100 instructions (loop does ~14)
 
-    // Run the program
-    cpu.reset();
-    // Manually load instructions into memory at PC=0
-    // Since we can't directly write to memory from CPU, we'll simulate
-    uint32_t sum = 0;
-    for (int i = 1; i <= 10; ++i) sum += i;
-    ESP_LOGI(TAG, "Expected sum 1..10 = %d", sum);
-    ESP_LOGI(TAG, "RISC-V demo (simulated): sum = %d\n", sum);
+    uint32_t result = cpu.get_reg(10);
+    ESP_LOGI(TAG, "RISC-V CPU: sum 1..10 = %d (expected 55) %s",
+             result, result == 55 ? "[PASS]" : "[FAIL]");
 }
 
 static void run_final_report() {
