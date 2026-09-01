@@ -1,6 +1,5 @@
 # VFPGA-S3 Hardware Performance Report
 
-**Date:** August 31, 2026
 **Board:** ESP32-S3-DevKitC-1 N16R8
 **Framework:** ESP-IDF 6.0.1 (PlatformIO)
 

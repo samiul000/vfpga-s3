@@ -219,5 +219,5 @@ The VFPGA-S3 runs ~1,700x slower than a real FPGA for combinational logic but re
 
 ## Acknowledgements
 
-- **[Ponytail](https://github.com/dietrichgebert/ponytail)** — Code audit and review for over-engineering, ensuring the codebase stays minimal and efficient.
+- **[Ponytail](https://github.com/dietrichgebert/ponytail)** : Code audit and review for ensuring the codebase stays minimal and efficient.
 
