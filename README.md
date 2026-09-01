@@ -1,8 +1,11 @@
-# VFPGA-S3
+<div align="center">
+<h1>VFPGA-S3</h1>
 
-Software-defined virtual FPGA on ESP32-S3 N16R8. Runs LUT4-based designs entirely in software with a full HDL toolchain, 4K LUT capacity, and an integrated RV32I RISC-V CPU.
+<img src="assets/vfpga_logo.png" width="20%" height="20%">
 
-![Graphical Abstract](docs/graphical_abstract.png)
+<h4>Software-defined virtual FPGA on ESP32-S3 N16R8. Runs LUT4-based designs entirely in software with a full HDL toolchain, 4K LUT capacity, 
+and an integrated RV32I RISC-V CPU.</h4>
+</div>
 
 ---
 
@@ -45,14 +48,14 @@ Equivalent to a **Lattice iCE40 UP5K** (5,280 LUTs) in capacity.
 | DSP (INT32 multiply) | 8.3 Mops/s |
 | BRAM (read/write) | ~5.0 Mops/s |
 
-![LUT4 Scaling](docs/lut4_scaling.png)
-![Performance Benchmarks](docs/performance_benchmarks.png)
+![LUT4 Scaling](assets/lut4_scaling.png)
+![Performance Benchmarks](assets/performance_benchmarks.png)
 
 ---
 
 ## Architecture
 
-![Architecture](docs/architecture.png)
+![Architecture](assets/architecture.png)
 
 ```
 src/
@@ -66,7 +69,7 @@ src/
   main.cpp         Entry point, demos, test runner
 ```
 
-![Pipeline Timing](docs/pipeline_timing.png)
+![Pipeline Timing](assets/pipeline_timing.png)
 
 ---
 
@@ -146,7 +149,7 @@ core.init(mapper.num_luts(), mapper.num_ffs());
 mapper.load(core);
 ```
 
-See [HDL_GUIDE.md](HDL_GUIDE.md) for syntax and examples.
+See [HDL_GUIDE.md](docs/HDL_GUIDE.md) for syntax and examples.
 
 ## RISC-V CPU
 
@@ -173,13 +176,13 @@ cpu.run(100);
 uint32_t sum = cpu.get_reg(10);  // 55
 ```
 
-See [RISC-V.md](RISC-V.md) for full instruction set, examples, and encoding guide.
+See [RISC-V.md](docs/RISC-V.md) for full instruction set, examples, and encoding guide.
 
 ---
 
 ## Resource Usage
 
-![Resources](docs/resources.png)
+![Resources](assets/resources.png)
 
 | Component | Internal RAM | PSRAM |
 |-----------|--------------|-------|
@@ -207,9 +210,9 @@ The VFPGA-S3 runs ~1,700x slower than a real FPGA for combinational logic but re
 | File | Contents |
 |------|----------|
 | [INSTRUCTION.md](INSTRUCTION.md) | Full project specification and milestones |
-| [HDL_GUIDE.md](HDL_GUIDE.md) | HDL syntax, examples, and pipeline usage |
-| [RISC-V.md](RISC-V.md) | RV32I instruction set, API, programming examples |
-| [performance.md](performance.md) | Hardware benchmarks and comparison data |
+| [HDL_GUIDE.md](docs/HDL_GUIDE.md) | HDL syntax, examples, and pipeline usage |
+| [RISC-V.md](docs/RISC-V.md) | RV32I instruction set, API, programming examples |
+| [performance.md](docs/performance.md) | Hardware benchmarks and comparison data |
 
 ---
 
