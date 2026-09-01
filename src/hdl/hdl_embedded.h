@@ -1,7 +1,6 @@
 #pragma once
 
 // Auto-generated HDL file contents.
-// To add a new design: add the .vhdl file, then paste its content here.
 
 static const char *AND_GATE_HDL =
     "module and_gate;\n"

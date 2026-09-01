@@ -47,3 +47,7 @@ desktop.ini
 INSTRUCTION.md
 docs/generate_graphics.py
 docs/gen_abstract.py
+tools/
+
+# PlatformIO
+.pio/

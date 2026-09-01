@@ -9,9 +9,11 @@ struct CoreLut;
 
 namespace vfpga_pie {
 
-// ponytail: PIE-accelerated batch evaluation
-// Process 4 LUTs simultaneously using Xtensa PIE 128-bit vector registers
-// luts must be 16-byte aligned (use heap_caps_aligned_alloc)
+/*
+   PIE-accelerated batch evaluation
+   Process 4 LUTs simultaneously using Xtensa PIE 128-bit vector registers
+   luts must be 16-byte aligned (use heap_caps_aligned_alloc)
+*/
 void evaluate_batch_4(const CoreLut *luts, const VSignal *signals, VSignal *outputs, size_t count);
 
 // Process 16 LUTs at a time (maximizes QR register usage)

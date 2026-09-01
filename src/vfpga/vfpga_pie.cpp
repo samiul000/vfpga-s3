@@ -1,16 +1,18 @@
 #include "vfpga_pie.h"
 #include "vfpga_core.h"
 
-// ponytail: Xtensa PIE batch evaluation
-// Process 4 LUTs at a time using 128-bit vector registers
-//
-// Since Xtensa PIE lacks vtbl (table lookup), the truth table lookup
-// remains scalar. PIE accelerates: 128-bit loads, AND, shift, combine.
-//
-// Register usage:
-//   q0-q3: input signal vectors (4 signals each)
-//   q4-q7: scratch / output vectors
-//   a2-a7: scalar pointers and temporaries
+/*
+   Xtensa PIE batch evaluation
+   Process 4 LUTs at a time using 128-bit vector registers
+
+   Since Xtensa PIE lacks vtbl (table lookup), the truth table lookup
+   remains scalar. PIE accelerates: 128-bit loads, AND, shift, combine.
+
+   Register usage:
+     q0-q3: input signal vectors (4 signals each)
+     q4-q7: scratch / output vectors
+     a2-a7: scalar pointers and temporaries
+*/
 
 #if defined(__xtensa__) && defined(ESP_PLATFORM)
 
@@ -43,7 +45,7 @@ static inline uint32_t extract_4indices(const uint32_t *a, const uint32_t *b,
 namespace vfpga_pie {
 
 void evaluate_batch_4(const CoreLut *luts, const VSignal *signals, VSignal *signals_out, size_t count) {
-    // ponytail: batch4 = 4 LUTs per iteration with branchless lookup
+    // batch4 = 4 LUTs per iteration with branchless lookup
     size_t i = 0;
     for (; i + 3 < count; i += 4) {
         const CoreLut &l0 = luts[i];

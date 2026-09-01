@@ -22,7 +22,7 @@
 
 static const char *TAG = "vfpga";
 
-// Called from demo_run.cpp
+// called from demo_run.cpp
 extern void run_all_demos(void);
 extern void run_final_report(void);
 
@@ -195,7 +195,7 @@ static void run_user_hdl() {
                 }
             }
         } else if (nin == 0) {
-            ESP_LOGW(TAG, "No inputs found — design has no testable ports");
+            ESP_LOGW(TAG, "No inputs found! design has no testable ports");
         } else {
             ESP_LOGE(TAG, "Too many inputs (%zu) for exhaustive. Set USER_TEST_INPUTS.", nin);
         }

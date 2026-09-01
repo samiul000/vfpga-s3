@@ -9,7 +9,7 @@ using VSignal = uint32_t;
 static const bool RUN_SELF_TESTS = false;
 
 // ============================================================
-//  USER HDL DESIGN — edit this string, re-flash, see results
+//  USER HDL DESIGN : edit this string, re-flash, see results
 //
 //  Supported syntax: module, input, output, wire, register,
 //  assign, always @(posedge clk), if/else, basic operators.

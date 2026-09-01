@@ -7,9 +7,9 @@
 
 static const char *TAG = "vfpga_core";
 
-// ponytail: 16-byte alignment for Xtensa PIE SIMD registers
+// 16-byte alignment for Xtensa PIE SIMD registers
 static constexpr uint32_t ALIGN = 16;
-// ponytail: use PSRAM for large arrays (internal SRAM too fragmented for 4K LUTs)
+// use PSRAM for large arrays (internal SRAM too fragmented for 4K LUTs)
 static constexpr uint32_t MALLOC_CAPS = MALLOC_CAP_SPIRAM | MALLOC_CAP_8BIT;
 
 VFpgaCore::~VFpgaCore() { destroy(); }
@@ -90,7 +90,7 @@ void VFpgaCore::load_config(const MappedConfig &cfg) {
 }
 
 void VFpgaCore::evaluate_combinational() {
-    // ponytail: PIE batch evaluation — process 4 LUTs at a time
+    // PIE batch evaluation process 4 LUTs at a time
     vfpga_pie::evaluate_batch_4(luts_, signals_, signals_, lut_count_);
 }
 
