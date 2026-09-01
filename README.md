@@ -62,11 +62,13 @@ src/
   engine/          Bit-parallel evaluation engine
   vfpga/           LUT4, FlipFlop, BRAM, DSP, routing, core
   hdl/             Lexer, parser, netlist, mapper (HDL toolchain)
+  hdl/user_design.h  User-editable HDL design (edit this, re-flash)
   riscv/           RV32I CPU (37 instructions, 64KB RAM, MMIO)
   io/              GPIO, board detection
   benchmarks/      DSP and BRAM benchmarks
   tests/           All test suites (51 tests)
-  main.cpp         Entry point, demos, test runner
+  main.cpp         Entry point, user HDL workflow
+  demo_run.cpp     Built-in demos, tests, and legacy code
 ```
 
 ![Pipeline Timing](assets/pipeline_timing.png)
@@ -91,16 +93,17 @@ pio device monitor -b 115200
 
 ```
 VFPGA-S3
-  Self-Tests:           6/6 PASS
-  Bit-Parallel:        10/10 PASS
-  LUT4:                13/13 PASS
-  Flip-Flop:            6/6 PASS
-  Routing:              5/5 PASS
-  BRAM:                 3/3 PASS
-  DSP:                  4/4 PASS
-  HDL Pipeline:         3/3 PASS
-  RISC-V Demo:          1/1 PASS
-  Total:               51/51 PASS
+  Board: ESP32-S3-DevKitC-1 N16R8
+  === User HDL Design ===
+  LUTs: 1, FFs: 0
+  Inputs: a, b
+  Outputs: y
+  [00] y = 0
+  [10] y = 0
+  [01] y = 0
+  [11] y = 1
+  VFPGA-S3 Final Report
+  Done. System idle.
 ```
 
 ---
@@ -125,31 +128,29 @@ core.evaluate_combinational();
 bool result = core.get_lut(0).get_output();  // true
 ```
 
-## HDL Pipeline
+## Running Your Own HDL Design
 
-Write designs in the custom HDL (`.vhdl` files), then compile:
+Edit `src/hdl/user_design.h`, replace the `USER_HDL` string with your design, re-flash:
 
 ```cpp
-#include "hdl/parser.h"
-#include "hdl/netlist.h"
-#include "hdl/mapper.h"
-
-HdlParser parser;
-auto ast = parser.parse_file("design.vhdl");
-
-HdlNetlist netlist;
-netlist.build(ast);
-
-HdlMapper mapper;
-mapper.map(netlist);
-
-// Load into VFPGA core
-VfpgaCore core;
-core.init(mapper.num_luts(), mapper.num_ffs());
-mapper.load(core);
+// src/hdl/user_design.h
+static const char *USER_HDL =
+    "module my_counter;\n"
+    "input clock;\n"
+    "input reset;\n"
+    "output [3:0] count;\n"
+    "register [3:0] cnt;\n"
+    "always @(posedge clock) begin\n"
+    "    if (reset) cnt <= 0;\n"
+    "    else cnt <= cnt + 1;\n"
+    "end\n"
+    "assign count = cnt;\n"
+    "endmodule\n";
 ```
 
-See [HDL_GUIDE.md](docs/HDL_GUIDE.md) for syntax and examples.
+The pipeline auto-detects combinational vs sequential, enumerates test vectors, and prints results. For sequential designs, it finds `clock`/`reset` inputs and runs `USER_CYCLES` iterations.
+
+See [HDL_GUIDE.md](docs/HDL_GUIDE.md) for full syntax and examples.
 
 ## RISC-V CPU
 

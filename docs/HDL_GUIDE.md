@@ -160,33 +160,12 @@ endmodule
 
 ## Adding a New Design
 
-### Step 1: Write the HDL file
+### Step 1: Write the HDL
 
-Create `hdl/my_design.vhdl`:
-
-```vhdl
-module my_design;
-input clock;
-input [3:0] data;
-output [3:0] result;
-
-register [3:0] reg_a;
-
-always @(posedge clock) begin
-    reg_a <= data;
-end
-
-assign result = reg_a;
-
-endmodule
-```
-
-### Step 2: Add to hdl_embedded.h
-
-Open `src/hdl/hdl_embedded.h` and add:
+Open `src/hdl/user_design.h` and replace the `USER_HDL` string:
 
 ```cpp
-static const char *MY_DESIGN_HDL =
+static const char *USER_HDL =
     "module my_design;\n"
     "input clock;\n"
     "input [3:0] data;\n"
@@ -199,21 +178,30 @@ static const char *MY_DESIGN_HDL =
     "endmodule\n";
 ```
 
-### Step 3: Add demo call in main.cpp
+### Step 2: Configure test options (optional)
 
-In `app_main()`:
+In the same file, adjust `USER_CYCLES` and `USER_TEST_INPUTS` if needed:
 
 ```cpp
-run_hdl_pipeline("my_design", MY_DESIGN_HDL);
+static const int USER_CYCLES = 10;  // clock cycles for sequential designs
+
+// Custom test inputs (leave empty for auto-test)
+static const std::vector<std::vector<VSignal>> USER_TEST_INPUTS = {};
 ```
 
-### Step 4: Build and flash
+### Step 3: Build and flash
+
+```cpp
+### Step 3: Build and flash
 
 ```bash
-pio run
-pio run -t upload
+pio run -t upload --upload-port COM9
 pio device monitor
 ```
+
+The pipeline auto-detects your design type:
+- **Combinational**: enumerates all 2^N input combinations (N ≤ 8)
+- **Sequential**: finds `clock`/`reset` inputs, runs `USER_CYCLES` iterations
 
 ## API Reference
 
