@@ -3,8 +3,9 @@
 
 <img src="assets/vfpga_logo.png" width="20%" height="20%">
 
-<h4>Software-defined virtual FPGA on ESP32-S3 N16R8. Runs LUT4-based designs entirely in software with a full HDL toolchain, 4K LUT capacity, 
-and an integrated RV32I RISC-V CPU.</h4>
+<h4>Software-defined virtual FPGA on ESP32-S3 N16R8. UP5K-class LUT capacity (4,096 LUT4s) entirely in software, with a full HDL toolchain and an integrated RV32I RISC-V CPU. Reconfigurability with zero hardware barrier to entry: software-defined logic on a low-cost microcontroller.</h4>
+
+<p><b>51/51 automated tests PASS on hardware</b> · 4,096 LUT4s · RV32I CPU · HDL toolchain · CI: firmware build + HDL host tests</p>
 </div>
 
 ---
@@ -26,11 +27,11 @@ and an integrated RV32I RISC-V CPU.</h4>
 | LUT4s | 4,096 | 48 KB |
 | Flip-Flops | 4,096 | 48 KB |
 | Signals | 4,096 | 16 KB |
-| BRAM | 3 blocks (64/256/1024 x 32-bit) | 96 bytes |
-| DSP | 4 (INT8/16/32 multiply-add) | — |
+| BRAM | 3 configurable software BRAM blocks (64/256/1024 x 32-bit) | 96 bytes |
+| DSP | 4 configurable software multiply-accumulate units (INT8/16/32) | — |
 | **Total** | | **~400 KB PSRAM** |
 
-Equivalent to a **Lattice iCE40 UP5K** (5,280 LUTs) in capacity.
+**UP5K-class software-defined FPGA fabric** (4,096 LUT4s, approaching the LUT capacity of the Lattice iCE40 UP5K's 5,280 LUTs; timing, routing, DSP, and memory architectures differ fundamentally from silicon).
 
 ---
 
@@ -56,6 +57,10 @@ Equivalent to a **Lattice iCE40 UP5K** (5,280 LUTs) in capacity.
 ## Architecture
 
 ![Architecture](assets/architecture.png)
+
+```
+HDL -> Parser/Netlist -> Mapper -> VFPGA Fabric (LUT4/FF/BRAM/DSP) -> Bit-Parallel Execution -> ESP32-S3 (240 MHz)
+```
 
 ```
 src/
@@ -179,6 +184,18 @@ uint32_t sum = cpu.get_reg(10);  // 55
 
 See [RISC-V.md](docs/RISC-V.md) for full instruction set, examples, and encoding guide.
 
+## Hardware Demo: HDL to GPIO LED
+
+End-to-end pipeline: write HDL → compile/map → flash ESP32 → VFPGA routes to physical GPIO → LED blinks. `run_demo_gpio_led()` in `demo_run.cpp` compiles a 1-bit blinker through the full HDL toolchain, loads it into the fabric, and drives GPIO5:
+
+```
+Blink 1: led=1 -> GPIO5
+Blink 2: led=0 -> GPIO5
+...
+```
+
+Wire an LED (via resistor) to GPIO5 and ground to see it. Demo video/GIF placeholder — contributions welcome.
+
 ---
 
 ## Resource Usage
@@ -192,17 +209,17 @@ See [RISC-V.md](docs/RISC-V.md) for full instruction set, examples, and encoding
 
 ---
 
-## FPGA Comparison
+## Capacity Context (not a speed comparison)
 
 | FPGA | LUT4s | Clock | Notes |
 |------|-------|-------|-------|
 | **VFPGA-S3** | **4,096** | **28 Keval/s** | Software-defined, no hardware needed |
 | Lattice iCE40 LP384 | 384 | 48 MHz | Physical FPGA |
-| Lattice iCE40 UP5K | 5,280 | 48 MHz | Closest equivalent |
+| Lattice iCE40 UP5K | 5,280 | 48 MHz | Closest capacity reference |
 | Gowin GW1NR-9 | 8,640 | 24 MHz | Physical FPGA |
 | Xilinx Spartan-7 XC7S25 | 15,000 | 100 MHz | Physical FPGA |
 
-The VFPGA-S3 runs ~1,700x slower than a real FPGA for combinational logic but requires no physical hardware.
+The VFPGA-S3 does not compete with silicon FPGAs on clock speed. Its value proposition is reconfigurability, zero hardware barrier to entry, and software-defined logic on a low-cost microcontroller.
 
 ---
 

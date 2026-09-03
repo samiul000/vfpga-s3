@@ -390,7 +390,20 @@ static void my_io_write(void *ctx, uint32_t addr, uint32_t data) {
 }
 
 // Register before running:
-cpu.get_mem()->set_io_handler(nullptr, my_io_read, my_io_write);
+cpu.set_io_handler(nullptr, my_io_read, my_io_write);
 ```
 
 RISC-V code accessing `0x10000000` will call these handlers instead of touching RAM.
+
+## Virtual SoC Demo (CPU + Fabric)
+
+`src/riscv/riscv_soc_demo.cpp` (`run_soc_demo()`, called from `demo_run.cpp`) connects the RV32I core directly to a live `VFpgaCore` instance through the MMIO map:
+
+| Offset | Access | Function |
+|--------|--------|----------|
+| `+0x00` | write | Fabric input A |
+| `+0x04` | write | Fabric input B |
+| `+0x08` | read | Evaluate LUT(A, B), return bit 0 |
+| `+0x0C` | write | Reconfigure LUT truth table on the fly |
+
+The demo's RISC-V program (`lui` + `sw`/`lw`) writes A=1, B=1, reads back AND=1, then writes A=0 and reads back AND=0 — the CPU reconfiguring and observing fabric state through its own load/store instructions. A C++ follow-up reconfigures the same LUT to OR at runtime without rebuilding anything.

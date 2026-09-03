@@ -107,6 +107,42 @@ end
 8'd255      // decimal with width
 ```
 
+## HDL Compatibility Boundary
+
+This HDL is a defined synthesizable subset, not full Verilog/VHDL. Anything outside this boundary is rejected by the parser.
+
+### Supported
+
+| Construct | Notes |
+|-----------|-------|
+| `module` / `endmodule` | Single module per design string |
+| `input` / `output` (scalar + `[N:0]` buses) | Clock/reset auto-detected by port name |
+| `wire` (scalar + buses) | Combinational nets |
+| `register` (scalar + buses) | Maps to flip-flops |
+| `assign` | Combinational continuous assignment |
+| `always @(posedge clk)` | Single clocked block per register |
+| `if` / `else` (inside `always`, single-statement) | Maps to MUX LUTs |
+| Operators `& \| ^ + == !=` | See operator table above |
+| Number literals (dec/hex/bin, sized) | See literals above |
+
+### Unsupported (parser rejects or ignores)
+
+| Construct | Reason |
+|-----------|--------|
+| `generate`, `parameter`, `localparam` | No elaboration phase |
+| Tri-state (`z`, `inout`) | No multi-driver resolution in fabric |
+| `#delays`, `@(negedge)`, multi-clock domains | No timing model; single posedge clock only |
+| Multiple `always` blocks driving the same signal | Single-driver rule |
+| `case`/`for`/`while`/`function`/`task` | Not in the subset (use `if`/`else` chains) |
+| System tasks (`$display`, etc.) | No simulation backend |
+
+### Known single-LUT architectural limits
+
+- `+` maps to XOR LUTs **without a carry chain** — multi-bit addition does not propagate carries like silicon.
+- Each LUT has 4 inputs; truth tables must be symmetric in the unused 4th input or it is tied to GND.
+- Exhaustive auto-test covers designs with **<= 8 inputs** (2^N combinations); larger designs must set `USER_TEST_INPUTS`.
+- Sequential auto-test finds `clock`/`reset` by port name and runs `USER_CYCLES` iterations.
+
 ## Examples
 
 ### AND Gate (combinational)

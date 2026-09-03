@@ -24,9 +24,11 @@
 | LUT4s | **4,096** | 48 KB |
 | Flip-Flops | **4,096** | 48 KB |
 | Signals/Nets | **4,096** | 16 KB |
-| BRAM | 3 blocks (64/256/1024 x 32-bit) | 96 bytes |
-| DSP | 4 (INT8/16/32 multiply-add) | — |
+| BRAM | 3 configurable software BRAM blocks (64/256/1024 x 32-bit) | 96 bytes |
+| DSP | 4 configurable software multiply-accumulate units (INT8/16/32) | — |
 | **Total** | | **400 KB PSRAM** |
+
+**UP5K-class software-defined FPGA fabric** (4,096 LUT4s, approaching the LUT capacity of the Lattice iCE40 UP5K's 5,280 LUTs; timing, routing, DSP, and memory architectures differ fundamentally from silicon).
 
 ---
 
@@ -125,17 +127,17 @@ Consistent ~5 Mops/s across all block sizes.
 
 ---
 
-## Comparison to Commercial FPGAs
+## Capacity Context (not a speed comparison)
 
 | FPGA | LUT4s | Equivalent |
 |------|-------|------------|
 | **VFPGA-S3** | **4,096** | **—** |
 | Lattice iCE40 LP384 | 384 | 0.1x |
-| Lattice iCE40 UP5K | 5,280 | 1.3x |
+| Lattice iCE40 UP5K | 5,280 | 1.3x (closest capacity reference) |
 | Gowin GW1NR-9 | 8,640 | 2.1x |
 | Xilinx Spartan-7 XC7S25 | 15,000 | 3.7x |
 
-VFPGA-S3 is equivalent to a **Lattice iCE40 UP5K** in LUT count, running in software at ~28 Keval/s.
+The VFPGA-S3 does not compete with silicon FPGAs on clock speed. Its value proposition is reconfigurability, zero hardware barrier to entry, and software-defined logic on a low-cost microcontroller.
 
 ---
 
@@ -150,6 +152,30 @@ VFPGA-S3 is equivalent to a **Lattice iCE40 UP5K** in LUT count, running in soft
 
 ---
 
+## Engine Profile (measurement only)
+
+`Benchmark::run_profile()` splits one eval cycle into LUT batch vs FF update vs signal I/O at 64/1,024/4,096 LUTs (serial output). It instruments only — no evaluation code path is modified. Run it to locate scaling bottlenecks (routing vs LUT eval vs FF updates) before attempting engine changes.
+
+---
+
+## Fabric Benchmark Suite (golden vectors)
+
+`Benchmark::run_fabric_suite()` runs real digital circuits with known-good outputs:
+
+| Design | Resources | Golden vector |
+|--------|-----------|---------------|
+| AND-net64 | 64 LUTs | all-1 inputs → 1 |
+| Counter8 | ~36 LUTs, 8 FFs | 300 cycles → 44 |
+| LFSR8 | 3 LUTs, 8 FFs | C++ reference model |
+| UART-TX 8N1 | 10 FFs | 0x55 frame bits |
+| FIR-4tap | DSP MAC | 300 |
+| CRC-8 | fabric XOR gates | 0xF4 (`"123456789"`) |
+| AES-round | fabric XOR + S-box | ARK=0x78, SBOX=0xBC |
+
+Each line reports LUT/FF cost, latency, throughput, and PASS/FAIL.
+
+---
+
 ## Throughput vs. Real Hardware
 
 | Metric | VFPGA-S3 (Software) | iCE40 UP5K (Hardware) | Ratio |
@@ -157,6 +183,6 @@ VFPGA-S3 is equivalent to a **Lattice iCE40 UP5K** in LUT count, running in soft
 | LUT4s | 4,096 | 5,280 | 0.77x |
 | Clock | 28 Keval/s | 48 MHz | 0.0006x |
 | Logic eval | 36 us/cycle | 21 ns/cycle | 1,714x slower |
-| DSP | 8.3 Mops/s | 8 x 16-bit MACs | Comparable |
+| DSP | 8.3 Mops/s (software MAC) | 8 x 16-bit MACs (silicon) | Not directly comparable |
 
 The VFPGA-S3 runs at ~1,700x slower than a real FPGA for combinational logic, but provides full programmability in software with no physical hardware constraints.
