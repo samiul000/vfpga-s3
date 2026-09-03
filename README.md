@@ -158,6 +158,8 @@ The pipeline auto-detects combinational vs sequential, enumerates test vectors, 
 
 See [HDL_GUIDE.md](docs/HDL_GUIDE.md) for full syntax and examples.
 
+The same designs can also be emitted as synthesizable Verilog (`src/hdl/verilog_emit.h`) and checked with Icarus Verilog simulation plus a Yosys synthesis smoke test in CI.
+
 ## RISC-V CPU
 
 Integrated RV32I emulator with 37 instructions, 64 KB RAM, and memory-mapped I/O.
@@ -185,11 +187,13 @@ uint32_t sum = cpu.get_reg(10);  // 55
 
 See [RISC-V.md](docs/RISC-V.md) for full instruction set, examples, and encoding guide.
 
+![Virtual SoC Block Diagram](assets/soc_block_diagram.png)
+
 ## Dynamic Reconfigurability & SoC Control
 
-The entire fabric is software memory, there is no bitstream. The integrated RV32I soft core or the ESP32 host firmware can rewrite LUT truth tables, reload routing, and inspect internal signal states at runtime. No bitstream regeneration, no SPI reflash just memory writes.
+The entire fabric is software memory; there is no bitstream. The integrated RV32I soft core or the ESP32 host firmware can rewrite LUT truth tables, reload routing, and inspect internal signal states at runtime. No bitstream regeneration, no SPI reflash: just memory writes.
 
-**From the RV32I soft core (via MMIO):** the [Virtual SoC demo](docs/RISC-V.md#virtual-soc-demo-cpu--fabric) maps fabric inputs, evaluated output, and the LUT truth table into the CPU's MMIO window at `0x10000000`. A RISC-V program reconfigures an AND gate to OR mid-execution with a single `sw` demonstrated on hardware (`AND(1,1)=1`, then `OR(0,1)=1` after live reconfig `[PASS]`).
+**From the RV32I soft core (via MMIO):** the [Virtual SoC demo](docs/RISC-V.md#virtual-soc-demo-cpu--fabric) maps fabric inputs, evaluated output, and the LUT truth table into the CPU's MMIO window at `0x10000000`. A RISC-V program reconfigures an AND gate to OR mid-execution with a single `sw`, demonstrated on hardware (`AND(1,1)=1`, then `OR(0,1)=1` after live reconfig `[PASS]`).
 
 **From the ESP32 host firmware (via API):**
 
@@ -202,7 +206,9 @@ VSignal y = core.read_signal(id);   // inspect any internal net
 
 LUT table rewrites and signal inspection are demonstrated on hardware; routing changes go through the same runtime `load_config()` path the toolchain itself uses — no reflash at any step.
 
-**Contrast with cheap silicon:** on parts like the Lattice iCE40, partial reconfiguration or live fabric modification is effectively unavailable changing a circuit means regenerating the bitstream off-chip and reflashing SPI flash. Here the "bitstream" is a C struct in RAM.
+**Contrast with cheap silicon:** on parts like the Lattice iCE40, partial reconfiguration or live fabric modification is effectively unavailable: changing a circuit means regenerating the bitstream off-chip and reflashing SPI flash. Here the "bitstream" is a C struct in RAM.
+
+![Virtual Floorplan](assets/virtual_floorplan.png)
 
 ## Hardware Demo: HDL to GPIO LED
 
