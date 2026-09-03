@@ -68,12 +68,13 @@ src/
   vfpga/           LUT4, FlipFlop, BRAM, DSP, routing, core
   hdl/             Lexer, parser, netlist, mapper (HDL toolchain)
   hdl/user_design.h  User-editable HDL design (edit this, re-flash)
-  riscv/           RV32I CPU (37 instructions, 64KB RAM, MMIO)
+  riscv/           RV32I CPU (37 instructions, 64KB RAM, MMIO), Virtual SoC demo
   io/              GPIO, board detection
-  benchmarks/      DSP and BRAM benchmarks
+  benchmarks/      Logic/DSP/BRAM benchmarks, engine profiler, fabric golden-vector suite
   tests/           All test suites (51 tests)
   main.cpp         Entry point, user HDL workflow
   demo_run.cpp     Built-in demos, tests, and legacy code
+  isa_test_vectors.h  Generated RV32I coverage vectors (via host_test/gen_isa_test.py)
 ```
 
 ![Pipeline Timing](assets/pipeline_timing.png)
@@ -186,9 +187,9 @@ See [RISC-V.md](docs/RISC-V.md) for full instruction set, examples, and encoding
 
 ## Dynamic Reconfigurability & SoC Control
 
-The entire fabric is software memory — there is no bitstream. The integrated RV32I soft core or the ESP32 host firmware can rewrite LUT truth tables, reload routing, and inspect internal signal states at runtime. No bitstream regeneration, no SPI reflash — just memory writes.
+The entire fabric is software memory, there is no bitstream. The integrated RV32I soft core or the ESP32 host firmware can rewrite LUT truth tables, reload routing, and inspect internal signal states at runtime. No bitstream regeneration, no SPI reflash just memory writes.
 
-**From the RV32I soft core (via MMIO):** the [Virtual SoC demo](docs/RISC-V.md#virtual-soc-demo-cpu--fabric) maps fabric inputs, evaluated output, and the LUT truth table into the CPU's MMIO window at `0x10000000`. A RISC-V program reconfigures an AND gate to OR mid-execution with a single `sw` — demonstrated on hardware (`AND(1,1)=1`, then `OR(0,1)=1` after live reconfig `[PASS]`).
+**From the RV32I soft core (via MMIO):** the [Virtual SoC demo](docs/RISC-V.md#virtual-soc-demo-cpu--fabric) maps fabric inputs, evaluated output, and the LUT truth table into the CPU's MMIO window at `0x10000000`. A RISC-V program reconfigures an AND gate to OR mid-execution with a single `sw` demonstrated on hardware (`AND(1,1)=1`, then `OR(0,1)=1` after live reconfig `[PASS]`).
 
 **From the ESP32 host firmware (via API):**
 
@@ -201,7 +202,7 @@ VSignal y = core.read_signal(id);   // inspect any internal net
 
 LUT table rewrites and signal inspection are demonstrated on hardware; routing changes go through the same runtime `load_config()` path the toolchain itself uses — no reflash at any step.
 
-**Contrast with cheap silicon:** on parts like the Lattice iCE40, partial reconfiguration or live fabric modification is effectively unavailable — changing a circuit means regenerating the bitstream off-chip and reflashing SPI flash. Here the "bitstream" is a C struct in RAM.
+**Contrast with cheap silicon:** on parts like the Lattice iCE40, partial reconfiguration or live fabric modification is effectively unavailable changing a circuit means regenerating the bitstream off-chip and reflashing SPI flash. Here the "bitstream" is a C struct in RAM.
 
 ## Hardware Demo: HDL to GPIO LED
 
@@ -213,7 +214,7 @@ Blink 2: led=0 -> GPIO5
 ...
 ```
 
-Wire an LED (via resistor) to GPIO5 and ground to see it. Demo video/GIF placeholder — contributions welcome.
+Wire an LED (via resistor) to GPIO5 and ground to see it. Demo video/GIF placeholder.
 
 ---
 
