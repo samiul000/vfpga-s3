@@ -25,7 +25,9 @@ struct SocFabric {
     VFpgaCore core;
     uint32_t a = 0;
     uint32_t b = 0;
-    uint16_t truth_table = 0x8000; // AND
+    // 2-input AND with c=d=don't-care: idx {3,7,11,15} -> 0x8888.
+    // (0x8000 would need all FOUR inputs high; c=d are tied to GND.)
+    uint16_t truth_table = 0x8888; // AND
 };
 
 static void fabric_apply(SocFabric *f) {
@@ -67,7 +69,7 @@ void run_soc_demo() {
 
     SocFabric fabric;
     fabric.core.init(16, 4, 0);
-    soc_write(&fabric, MMIO_BASE + REG_TT, 0x8000); // AND gate
+    soc_write(&fabric, MMIO_BASE + REG_TT, 0x8888); // AND gate
 
     RiscvCpu cpu;
     cpu.reset();
@@ -85,7 +87,7 @@ void run_soc_demo() {
         0x00000013, // nop
     };
     cpu.load_program(0, program, sizeof(program) / sizeof(program[0]));
-    cpu.run(32);
+    cpu.run(8); // exact: 8 linear instructions, no branches (no overshoot)
 
     uint32_t y1 = cpu.get_reg(7);
     uint32_t y0 = cpu.get_reg(8);
@@ -94,7 +96,7 @@ void run_soc_demo() {
              y1, y0, pass ? "[PASS]" : "[FAIL]");
 
     // C++ side: on-the-fly reconfig to OR, RISC-V visible via same MMIO map
-    soc_write(&fabric, MMIO_BASE + REG_TT, 0xFFFE); // OR
+    soc_write(&fabric, MMIO_BASE + REG_TT, 0xEEEE); // OR (2-input, c=d=don't-care)
     soc_write(&fabric, MMIO_BASE + REG_A, 0);
     soc_write(&fabric, MMIO_BASE + REG_B, 1);
     uint32_t y_or = soc_read(&fabric, MMIO_BASE + REG_Y);

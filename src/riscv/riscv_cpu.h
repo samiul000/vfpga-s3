@@ -15,6 +15,8 @@ public:
         void (*write)(void *ctx, uint32_t addr, uint32_t data));
     uint32_t get_pc() const;
     uint32_t get_reg(uint8_t idx) const;
+    // Debug/test accessor: read emulated RAM (used by ISA coverage demo).
+    uint32_t read_mem_word(uint32_t addr) const { return mem_.read_word(addr); }
 
 private:
     void execute(uint32_t instruction);
