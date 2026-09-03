@@ -16,6 +16,9 @@ jobs:
         run: pio run
 
   hdl-toolchain-host-test:
+    # Requires a C++17-capable g++ (ubuntu-latest provides it).
+    # Not runnable on pre-C++17 toolchains (e.g., MinGW GCC 6.x):
+    # src/hdl/netlist.cpp uses C++17 structured bindings.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

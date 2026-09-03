@@ -325,7 +325,7 @@ void run_final_report() {
     ESP_LOGI(TAG, "Software Components:");
     ESP_LOGI(TAG, "  - Mini HDL (lexer/parser/mapper)");
     ESP_LOGI(TAG, "  - Binary config format with validation");
-    ESP_LOGI(TAG, "  - RV32I emulator (17 instructions)");
+    ESP_LOGI(TAG, "  - RV32I emulator (37 instructions)");
     ESP_LOGI(TAG, "  - Memory-mapped VFPGA I/O");
     ESP_LOGI(TAG, "  - GPIO bridge with safety validation");
     ESP_LOGI(TAG, "  - GPIO capability database");
