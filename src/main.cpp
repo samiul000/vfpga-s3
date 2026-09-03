@@ -235,7 +235,7 @@ extern "C" void app_main(void) {
     run_user_hdl();
 
     // Uncomment to run all built-in demos (HDL pipeline, LUT, counter, LFSR, RISC-V):
-    // run_all_demos();
+    run_all_demos();
 
     run_final_report();
 
