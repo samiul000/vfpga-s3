@@ -34,8 +34,8 @@ jobs:
         run: /tmp/test_hdl
 
   verilog-sim-synth:
-    # Simulates the VerilogEmitter golden outputs; `+` is excluded from
-    # equivalence by design (fabric maps it carry-less, Verilog carries).
+    # Simulates the VerilogEmitter golden outputs; `+` agrees via the
+    # toolchain's ripple-carry logic, so counter equivalence holds.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

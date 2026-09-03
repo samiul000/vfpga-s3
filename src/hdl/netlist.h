@@ -42,4 +42,14 @@ private:
 
     uint16_t ensure_net(const std::string &name);
     uint16_t ensure_bus_net(const std::string &name, int32_t bit);
+
+    // Per-bit expansion helpers (ripple-carry support). Callers gate new
+    // code on width > 1 so width <= 1 output stays byte-identical to legacy.
+    int32_t bus_width(const std::string &name);
+    uint16_t operand_bit(const std::string &name, int32_t bit);
+    uint16_t add_bit(uint16_t a, uint16_t b, uint16_t carry_in,
+                     uint16_t sum_net, const std::string &tag);
+    std::vector<uint16_t> branch_values(const std::string &op,
+                                        const std::vector<std::string> &children,
+                                        int32_t width, const std::string &tag);
 };

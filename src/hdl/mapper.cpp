@@ -52,6 +52,11 @@ uint16_t Mapper::truth_table_for_op(const std::string &op) const {
     if (op == "MUX") return 0x00CA;
     // NOT(a): a=bit0, output=!a for all b,c,d combos: bits 0,2,4,6,8,10,12,14 = 0x5555
     if (op == "!") return 0x5555;
+    // XOR3(a,b,c): odd parity, d don't-care: bits 1,2,4,7,9,10,12,15 = 0x9696
+    // Ripple-carry sum bit (netlist builds the carry chain around it).
+    if (op == "XOR3") return 0x9696;
+    // MAJ3(a,b,c): carry majority, d don't-care: bits 3,5,6,7,11,13,14,15 = 0xE8E8
+    if (op == "MAJ3") return 0xE8E8;
     ESP_LOGW(TAG, "Unknown op '%s', using AND", op.c_str());
     return 0x8000;
 }

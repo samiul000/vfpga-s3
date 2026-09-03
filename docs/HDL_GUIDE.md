@@ -138,7 +138,8 @@ This HDL is a defined synthesizable subset, not full Verilog/VHDL. Anything outs
 
 ### Known single-LUT architectural limits
 
-- `+` maps to XOR LUTs **without a carry chain** — multi-bit addition does not propagate carries like silicon.
+- `+` on buses generates a ripple-carry adder (XOR3 sum + MAJ3 carry LUTs per bit), so multi-bit addition propagates carries correctly. A lone `+` LUT in isolation remains carry-less (`0x6666`) — the carry lives in the LUT network, not in one cell.
+- Bus registers and bus logic expand per bit (one FF per bit, per-bit MUX/data LUTs); width-1 designs map exactly as before.
 - Each LUT has 4 inputs; truth tables must be symmetric in the unused 4th input or it is tied to GND.
 - Exhaustive auto-test covers designs with **<= 8 inputs** (2^N combinations); larger designs must set `USER_TEST_INPUTS`.
 - Sequential auto-test finds `clock`/`reset` by port name and runs `USER_CYCLES` iterations.
@@ -151,7 +152,7 @@ This HDL is a defined synthesizable subset, not full Verilog/VHDL. Anything outs
 - `host_test/tb_*.v` — Icarus Verilog testbenches simulated in CI, diffed against fabric golden vectors
 - `host_test/golden_counter.v` — synthesized in CI (`yosys synth -top counter`)
 
-Known emission limits (shared with the parser, not emitter bugs): chained operators (`a & b & c`) collapse in the AST; multi-operand `if` conditions (`a == b`) are emitted as `1'b1` with a WARNING comment; `+` emits with carry while the fabric maps it carry-less — excluded from equivalence by design.
+Known emission limits (shared with the parser, not emitter bugs): chained operators (`a & b & c`) collapse in the AST; multi-operand `if` conditions (`a == b`) are emitted as `1'b1` with a WARNING comment. `+` emits with carry and the toolchain builds matching ripple-carry logic, so equivalence holds.
 
 ## Examples
 

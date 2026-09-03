@@ -1,5 +1,8 @@
 #include "netlist.h"
 #include <cstdio>
+#include <cstdlib>
+#include <cctype>
+#include <string>
 
 void Netlist::add_net(const std::string &name) {
     nets_.push_back(Net{static_cast<uint16_t>(nets_.size()), name});
@@ -35,6 +38,107 @@ uint16_t Netlist::ensure_bus_net(const std::string &name, int32_t bit) {
     char buf[64];
     snprintf(buf, sizeof(buf), "%s[%ld]", name.c_str(), (long)bit);
     return ensure_net(buf);
+}
+
+// Plain decimal literal value, or -1 if not one (sized/hex fall back to
+// whole-net handling, matching legacy behavior for those forms).
+static int32_t decimal_value(const std::string &name) {
+    if (name.empty()) return -1;
+    for (char c : name) {
+        if (!isdigit((unsigned char)c)) return -1;
+    }
+    return (int32_t)strtol(name.c_str(), nullptr, 10);
+}
+
+// Declared bus width from bit-net population (0 = unknown name).
+int32_t Netlist::bus_width(const std::string &name) {
+    int32_t w = 0;
+    char buf[64];
+    while (true) {
+        snprintf(buf, sizeof(buf), "%s[%ld]", name.c_str(), (long)w);
+        if (resolve(buf) < 0) break;
+        ++w;
+    }
+    return w;
+}
+
+// Operand net for one bit: bit net if it exists, per-bit constant net for
+// decimal literals ("1" at bit 0 only), else the shared whole-name net.
+uint16_t Netlist::operand_bit(const std::string &name, int32_t bit) {
+    char buf[64];
+    snprintf(buf, sizeof(buf), "%s[%ld]", name.c_str(), (long)bit);
+    int16_t id = resolve(buf);
+    if (id >= 0) return static_cast<uint16_t>(id);
+    int32_t lit = decimal_value(name);
+    if (lit >= 0) return ensure_net(((lit >> bit) & 1) ? "1" : "0");
+    int16_t whole = resolve(name);
+    if (whole >= 0) return static_cast<uint16_t>(whole);
+    return ensure_net(name);
+}
+
+// One full-adder stage: sum_net = a ^ b ^ carry_in (XOR3); returns carry out
+// (MAJ3). Tag must be unique per stage; inputs are d-symmetric LUTs.
+uint16_t Netlist::add_bit(uint16_t a, uint16_t b, uint16_t carry_in,
+                          uint16_t sum_net, const std::string &tag) {
+    NetlistComponent s;
+    s.type = NetlistComponent::Type::LUT4;
+    s.id = static_cast<uint16_t>(components_.size());
+    s.op = "XOR3";
+    s.inputs.push_back(a);
+    s.inputs.push_back(b);
+    s.inputs.push_back(carry_in);
+    s.output = sum_net;
+    components_.push_back(s);
+
+    uint16_t carry_net = ensure_net(tag + "_c");
+    NetlistComponent c;
+    c.type = NetlistComponent::Type::LUT4;
+    c.id = static_cast<uint16_t>(components_.size());
+    c.op = "MAJ3";
+    c.inputs.push_back(a);
+    c.inputs.push_back(b);
+    c.inputs.push_back(carry_in);
+    c.output = carry_net;
+    components_.push_back(c);
+    return carry_net;
+}
+
+// Per-bit combinational value nets for one branch. "+" builds a ripple-carry
+// chain (fresh GND-started carry per call); other supported ops replicate
+// bitwise. Callers gate "==/!=" to the legacy whole-name path.
+std::vector<uint16_t> Netlist::branch_values(const std::string &op,
+        const std::vector<std::string> &children, int32_t width,
+        const std::string &tag) {
+    std::vector<uint16_t> out;
+    if (op == "+" && children.size() >= 2) {
+        uint16_t carry = ensure_net("GND");
+        for (int32_t b = 0; b < width; ++b) {
+            uint16_t s = ensure_net(tag + "_s_" + std::to_string(b));
+            uint16_t ai = operand_bit(children[0], b);
+            uint16_t bi = operand_bit(children[1], b);
+            carry = add_bit(ai, bi, carry, s, tag + "_c_" + std::to_string(b));
+            out.push_back(s);
+        }
+        return out;
+    }
+    std::string use_op = op.empty() ? "PASS" : op;
+    for (int32_t b = 0; b < width; ++b) {
+        uint16_t v = ensure_net(tag + "_v_" + std::to_string(b));
+        NetlistComponent c;
+        c.type = NetlistComponent::Type::LUT4;
+        c.id = static_cast<uint16_t>(components_.size());
+        c.op = use_op;
+        for (const auto &child : children) {
+            c.inputs.push_back(operand_bit(child, b));
+        }
+        if (c.inputs.empty()) {
+            c.inputs.push_back(ensure_net(tag + "_const"));
+        }
+        c.output = v;
+        components_.push_back(c);
+        out.push_back(v);
+    }
+    return out;
 }
 
 void Netlist::build_from_ast(const std::vector<AstNode> &ast) {
@@ -98,6 +202,37 @@ void Netlist::build_from_ast(const std::vector<AstNode> &ast) {
 
             if (node.children.empty()) continue;
 
+            // Per-bit expansion for buses (bitwise ops + ripple-carry "+").
+            // Width <= 1 and "==/!=" keep the legacy whole-name path below.
+            int32_t aw = bus_width(node.name);
+            if (aw > 1 && !node.children.empty() &&
+                (node.op.empty() || node.op == "PASS" || node.op == "&" ||
+                 node.op == "|" || node.op == "^" || node.op == "+")) {
+                uint16_t carry = ensure_net("GND");
+                for (int32_t b = 0; b < aw; ++b) {
+                    uint16_t out = ensure_bus_net(node.name, b);
+                    if (node.op == "+" && node.children.size() >= 2) {
+                        uint16_t ai = operand_bit(node.children[0], b);
+                        uint16_t bi = operand_bit(node.children[1], b);
+                        char tag[96];
+                        snprintf(tag, sizeof(tag), "_add_%s_%ld",
+                                 node.name.c_str(), (long)b);
+                        carry = add_bit(ai, bi, carry, out, tag);
+                    } else {
+                        NetlistComponent comp;
+                        comp.type = NetlistComponent::Type::LUT4;
+                        comp.id = static_cast<uint16_t>(components_.size());
+                        comp.op = node.op.empty() ? "PASS" : node.op;
+                        for (const auto &child : node.children) {
+                            comp.inputs.push_back(operand_bit(child, b));
+                        }
+                        comp.output = out;
+                        components_.push_back(comp);
+                    }
+                }
+                continue;
+            }
+
             NetlistComponent comp;
             comp.type = NetlistComponent::Type::LUT4;
             comp.id = static_cast<uint16_t>(components_.size());
@@ -149,6 +284,48 @@ void Netlist::build_from_ast(const std::vector<AstNode> &ast) {
                     // Direct assignment: reg <= expr
                     int16_t reg_id = resolve(sub.name);
                     if (reg_id < 0) continue;
+
+                    // Per-bit expansion for buses; preserves the legacy shape
+                    // per bit (LUT drives the state net, FF self-copies it).
+                    int32_t dw = bus_width(sub.name);
+                    if (dw > 1 &&
+                        (sub.op.empty() || sub.op == "PASS" || sub.op == "&" ||
+                         sub.op == "|" || sub.op == "^" || sub.op == "+")) {
+                        uint16_t carry = ensure_net("GND");
+                        for (int32_t b = 0; b < dw; ++b) {
+                            uint16_t regbit = ensure_bus_net(sub.name, b);
+                            if (sub.op == "+" && sub.children.size() >= 2) {
+                                uint16_t ai = operand_bit(sub.children[0], b);
+                                uint16_t bi = operand_bit(sub.children[1], b);
+                                char tag[96];
+                                snprintf(tag, sizeof(tag), "_dadd_%s_%ld",
+                                         sub.name.c_str(), (long)b);
+                                carry = add_bit(ai, bi, carry, regbit, tag);
+                            } else {
+                                NetlistComponent lut_comp;
+                                lut_comp.type = NetlistComponent::Type::LUT4;
+                                lut_comp.id = static_cast<uint16_t>(components_.size());
+                                lut_comp.op = sub.op.empty() ? "PASS" : sub.op;
+                                lut_comp.output = regbit;
+                                for (const auto &child : sub.children) {
+                                    lut_comp.inputs.push_back(operand_bit(child, b));
+                                }
+                                if (lut_comp.inputs.empty()) {
+                                    uint16_t const_id = ensure_net(sub.name + "_const");
+                                    lut_comp.inputs.push_back(const_id);
+                                }
+                                components_.push_back(lut_comp);
+                            }
+                            NetlistComponent ff_comp;
+                            ff_comp.type = NetlistComponent::Type::FF;
+                            ff_comp.id = static_cast<uint16_t>(components_.size());
+                            ff_comp.op = "DFF";
+                            ff_comp.inputs.push_back(regbit);
+                            ff_comp.output = regbit;
+                            components_.push_back(ff_comp);
+                        }
+                        continue;
+                    }
 
                     // Create a LUT for the D-input expression
                     NetlistComponent lut_comp;
@@ -231,6 +408,62 @@ void Netlist::build_from_ast(const std::vector<AstNode> &ast) {
                             const AstNode *then_a = then_assigns[ai];
                             int16_t reg_id = resolve(then_a->name);
                             if (reg_id < 0) continue;
+
+                            // Per-bit expansion for buses: shared scalar cond,
+                            // per-bit then/else/MUX/FF. Ops outside the bitwise
+                            // set ("==", "!=") keep the legacy whole-name path.
+                            const AstNode *else_a = (ai < else_assigns.size())
+                                ? else_assigns[ai] : nullptr;
+                            std::string else_op = else_a ? else_a->op : "PASS";
+                            auto bitwise_ok = [](const std::string &op) {
+                                return op.empty() || op == "PASS" || op == "&" ||
+                                       op == "|" || op == "^" || op == "+";
+                            };
+                            int32_t iw = bus_width(then_a->name);
+                            if (iw > 1 && bitwise_ok(then_a->op) && bitwise_ok(else_op)) {
+                                std::vector<uint16_t> then_v = branch_values(
+                                    then_a->op, then_a->children, iw,
+                                    "_then_" + std::to_string(reg_id));
+                                std::vector<uint16_t> else_v;
+                                if (else_a) {
+                                    else_v = branch_values(
+                                        else_a->op, else_a->children, iw,
+                                        "_else_" + std::to_string(reg_id));
+                                } else {
+                                    for (int32_t b = 0; b < iw; ++b) {
+                                        else_v.push_back(
+                                            ensure_bus_net(then_a->name, b));
+                                    }
+                                }
+                                uint16_t gnd_net = ensure_net("GND");
+                                for (int32_t b = 0; b < iw; ++b) {
+                                    uint16_t regbit =
+                                        ensure_bus_net(then_a->name, b);
+                                    uint16_t mux_out = ensure_net(
+                                        "_mux_" + std::to_string(regbit));
+                                    NetlistComponent mux_comp;
+                                    mux_comp.type = NetlistComponent::Type::LUT4;
+                                    mux_comp.id = static_cast<uint16_t>(
+                                        components_.size());
+                                    mux_comp.op = "MUX";
+                                    mux_comp.output = mux_out;
+                                    mux_comp.inputs.push_back(else_v[b]);
+                                    mux_comp.inputs.push_back(then_v[b]);
+                                    mux_comp.inputs.push_back(cond_out);
+                                    mux_comp.inputs.push_back(gnd_net);
+                                    components_.push_back(mux_comp);
+
+                                    NetlistComponent ff_comp;
+                                    ff_comp.type = NetlistComponent::Type::FF;
+                                    ff_comp.id = static_cast<uint16_t>(
+                                        components_.size());
+                                    ff_comp.op = "DFF";
+                                    ff_comp.inputs.push_back(mux_out);
+                                    ff_comp.output = regbit;
+                                    components_.push_back(ff_comp);
+                                }
+                                continue;
+                            }
 
                             // Then-value LUT
                             uint16_t then_out = ensure_net("_then_" + std::to_string(reg_id));
