@@ -28,6 +28,12 @@ void RiscvCpu::load_program(uint32_t addr, const uint32_t *data, size_t count) {
     }
 }
 
+void RiscvCpu::set_io_handler(void *ctx,
+    uint32_t (*read)(void *ctx, uint32_t addr),
+    void (*write)(void *ctx, uint32_t addr, uint32_t data)) {
+    mem_.set_io_handler(ctx, read, write);
+}
+
 uint32_t RiscvCpu::get_pc() const { return pc_; }
 
 uint32_t RiscvCpu::get_reg(uint8_t idx) const {

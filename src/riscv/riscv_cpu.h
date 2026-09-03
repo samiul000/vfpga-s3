@@ -10,6 +10,9 @@ public:
     void step();
     void run(uint32_t instructions);
     void load_program(uint32_t addr, const uint32_t *data, size_t count);
+    void set_io_handler(void *ctx,
+        uint32_t (*read)(void *ctx, uint32_t addr),
+        void (*write)(void *ctx, uint32_t addr, uint32_t data));
     uint32_t get_pc() const;
     uint32_t get_reg(uint8_t idx) const;
 

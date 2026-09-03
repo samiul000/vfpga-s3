@@ -1,0 +1,30 @@
+name: VFPGA-S3 CI
+
+on: [push, pull_request]
+
+jobs:
+  firmware-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install PlatformIO
+        run: pip install platformio
+      - name: Build firmware
+        run: pio run
+
+  hdl-toolchain-host-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile HDL toolchain with host g++
+        run: |
+          g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
+            host_test/test_hdl.cpp \
+            src/hdl/lexer.cpp src/hdl/parser.cpp \
+            src/hdl/netlist.cpp src/hdl/mapper.cpp \
+            -o /tmp/test_hdl
+      - name: Run HDL toolchain tests
+        run: /tmp/test_hdl

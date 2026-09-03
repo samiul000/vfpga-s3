@@ -1,0 +1,74 @@
+// Host-side CI test for the HDL toolchain (lexer -> parser -> netlist -> mapper).
+// Compiles with plain g++ (no ESP-IDF); run in CI via .github/workflows/ci.yml
+// (see that file for the exact g++ command).
+#include <cstdio>
+#include "lexer.h"
+#include "parser.h"
+#include "netlist.h"
+#include "mapper.h"
+
+static int failures = 0;
+
+#define CHECK(cond, msg) do { \
+    if (cond) { printf("[PASS] %s\n", msg); } \
+    else { printf("[FAIL] %s\n", msg); ++failures; } \
+} while (0)
+
+static MappedConfig compile(const char *src) {
+    Lexer lexer;
+    auto tokens = lexer.tokenize(src);
+    Parser parser;
+    auto ast = parser.parse(tokens);
+    Netlist netlist;
+    netlist.build_from_ast(ast);
+    Mapper mapper;
+    return mapper.map_to_luts(netlist);
+}
+
+int main() {
+    // 1. AND gate: exactly 1 LUT with the AND truth table
+    MappedConfig and_cfg = compile(
+        "module and_gate;\ninput a;\ninput b;\noutput y;\n"
+        "assign y = a & b;\nendmodule\n");
+    CHECK(and_cfg.luts.size() == 1, "AND gate maps to 1 LUT");
+    if (!and_cfg.luts.empty())
+        CHECK(and_cfg.luts[0].truth_table == 0x8000, "AND gate truth table is 0x8000");
+
+    // 2. XOR gate: 1 LUT with the XOR truth table
+    MappedConfig xor_cfg = compile(
+        "module xor_gate;\ninput a;\ninput b;\noutput y;\n"
+        "assign y = a ^ b;\nendmodule\n");
+    CHECK(xor_cfg.luts.size() == 1, "XOR gate maps to 1 LUT");
+    if (!xor_cfg.luts.empty())
+        CHECK(xor_cfg.luts[0].truth_table == 0x6666, "XOR gate truth table is 0x6666");
+
+    // 3. Blinker (sequential): 1 flip-flop, LED output net resolves
+    {
+        Lexer lexer;
+        auto tokens = lexer.tokenize(
+            "module blinker;\ninput clock;\noutput led;\nregister q;\n"
+            "always @(posedge clock) begin\n    q <= q ^ 1;\nend\n"
+            "assign led = q;\nendmodule\n");
+        Parser parser;
+        auto ast = parser.parse(tokens);
+        Netlist netlist;
+        netlist.build_from_ast(ast);
+        Mapper mapper;
+        MappedConfig cfg = mapper.map_to_luts(netlist);
+        CHECK(cfg.ffs.size() == 1, "Blinker maps to 1 FF");
+        CHECK(netlist.resolve("led") >= 0, "Blinker 'led' net resolves");
+    }
+
+    // 4. 8-bit counter: 8 flip-flops
+    MappedConfig cnt_cfg = compile(
+        "module counter;\ninput clock;\ninput reset;\noutput [7:0] count;\n"
+        "register [7:0] count_reg;\n"
+        "always @(posedge clock) begin\n    if (reset) count_reg <= 0;\n"
+        "    else count_reg <= count_reg + 1;\nend\n"
+        "assign count = count_reg;\nendmodule\n");
+    CHECK(cnt_cfg.ffs.size() == 8, "8-bit counter maps to 8 FFs");
+
+    if (failures == 0) printf("\nAll HDL toolchain host tests PASS\n");
+    else printf("\n%d host test(s) FAILED\n", failures);
+    return failures;
+}

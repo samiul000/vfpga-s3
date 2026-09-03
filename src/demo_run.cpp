@@ -20,6 +20,7 @@
 #include "vfpga/vfpga_scheduler.h"
 #include "engine/bitparallel.h"
 #include "riscv/riscv_cpu.h"
+#include "riscv/riscv_soc_demo.h"
 
 #include "hdl/lexer.h"
 #include "hdl/parser.h"
@@ -226,6 +227,54 @@ static void run_demo_lfsr() {
     ESP_LOGI(TAG, "Final LFSR state: 0x%02X\n", final_state);
 }
 
+static void run_demo_gpio_led(GpioBridge &bridge) {
+    ESP_LOGI(TAG, "=== Demo: HDL blinker -> fabric -> GPIO5 LED ===");
+    static const char *BLINK_HDL =
+        "module blinker;\n"
+        "input clock;\n"
+        "output led;\n"
+        "register q;\n"
+        "always @(posedge clock) begin\n"
+        "    q <= q ^ 1;\n"
+        "end\n"
+        "assign led = q;\n"
+        "endmodule\n";
+
+    Lexer lexer;
+    auto tokens = lexer.tokenize(BLINK_HDL);
+    Parser parser;
+    auto ast = parser.parse(tokens);
+    Netlist netlist;
+    netlist.build_from_ast(ast);
+    Mapper mapper;
+    MappedConfig cfg = mapper.map_to_luts(netlist);
+    int16_t led_id = netlist.resolve("led");
+    if (cfg.ffs.empty() || led_id < 0) {
+        ESP_LOGW(TAG, "Blinker mapping failed, skipping GPIO demo");
+        return;
+    }
+    ESP_LOGI(TAG, "Blinker: %zu LUTs, %zu FFs, led net=%d",
+             cfg.luts.size(), cfg.ffs.size(), led_id);
+
+    if (!bridge.map_output(0, 5)) {
+        ESP_LOGW(TAG, "GPIO5 unsafe, skipping GPIO demo");
+        return;
+    }
+    VFpgaCore core;
+    core.init();
+    core.load_config(cfg);
+    for (int i = 0; i < 8; ++i) {
+        core.evaluate_combinational();
+        core.clock();
+        uint8_t bit = core.read_signal(led_id) ? 1 : 0;
+        bridge.set_output_value(0, bit);
+        bridge.commit_outputs();
+        ESP_LOGI(TAG, "Blink %d: led=%d -> GPIO5", i + 1, bit);
+        vTaskDelay(pdMS_TO_TICKS(250));
+    }
+    ESP_LOGI(TAG, "");
+}
+
 static void run_demo_riscv() {
     ESP_LOGI(TAG, "=== Demo: RISC-V sum 1..10 ===");
     RiscvCpu cpu;
@@ -334,6 +383,8 @@ void run_all_demos(void)
     run_demo_counter();
     run_demo_lfsr();
     run_demo_riscv();
+    run_soc_demo();
+    run_demo_gpio_led(bridge);
 
     // Final report
     run_final_report();
