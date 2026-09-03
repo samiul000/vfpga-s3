@@ -18,4 +18,6 @@ public:
     void run_counter();
     void run_lfsr();
     void run_nn();
+    void run_profile();
+    void run_fabric_suite();
 };
