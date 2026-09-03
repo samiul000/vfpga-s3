@@ -184,6 +184,25 @@ uint32_t sum = cpu.get_reg(10);  // 55
 
 See [RISC-V.md](docs/RISC-V.md) for full instruction set, examples, and encoding guide.
 
+## Dynamic Reconfigurability & SoC Control
+
+The entire fabric is software memory — there is no bitstream. The integrated RV32I soft core or the ESP32 host firmware can rewrite LUT truth tables, reload routing, and inspect internal signal states at runtime. No bitstream regeneration, no SPI reflash — just memory writes.
+
+**From the RV32I soft core (via MMIO):** the [Virtual SoC demo](docs/RISC-V.md#virtual-soc-demo-cpu--fabric) maps fabric inputs, evaluated output, and the LUT truth table into the CPU's MMIO window at `0x10000000`. A RISC-V program reconfigures an AND gate to OR mid-execution with a single `sw` — demonstrated on hardware (`AND(1,1)=1`, then `OR(0,1)=1` after live reconfig `[PASS]`).
+
+**From the ESP32 host firmware (via API):**
+
+```cpp
+core.load_config(new_cfg);          // rewrite LUT tables + routing live
+core.write_input(id, value);        // drive fabric inputs
+core.evaluate_combinational();
+VSignal y = core.read_signal(id);   // inspect any internal net
+```
+
+LUT table rewrites and signal inspection are demonstrated on hardware; routing changes go through the same runtime `load_config()` path the toolchain itself uses — no reflash at any step.
+
+**Contrast with cheap silicon:** on parts like the Lattice iCE40, partial reconfiguration or live fabric modification is effectively unavailable — changing a circuit means regenerating the bitstream off-chip and reflashing SPI flash. Here the "bitstream" is a C struct in RAM.
+
 ## Hardware Demo: HDL to GPIO LED
 
 End-to-end pipeline: write HDL → compile/map → flash ESP32 → VFPGA routes to physical GPIO → LED blinks. `run_demo_gpio_led()` in `demo_run.cpp` compiles a 1-bit blinker through the full HDL toolchain, loads it into the fabric, and drives GPIO5:
