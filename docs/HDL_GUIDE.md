@@ -94,7 +94,7 @@ end
 | `&`      | AND     | `0x8000`        |
 | `\|`     | OR      | `0xFE00`        |
 | `^`      | XOR     | `0x6969`        |
-| `+`      | ADD     | `0x6969` (carry) |
+| `+`      | ADD     | `0x6666` (carry-less) |
 | `==`     | EQUAL   | `0x8000`        |
 | `!=`     | NOT EQ  | `0x7FFF`        |
 
@@ -142,6 +142,16 @@ This HDL is a defined synthesizable subset, not full Verilog/VHDL. Anything outs
 - Each LUT has 4 inputs; truth tables must be symmetric in the unused 4th input or it is tied to GND.
 - Exhaustive auto-test covers designs with **<= 8 inputs** (2^N combinations); larger designs must set `USER_TEST_INPUTS`.
 - Sequential auto-test finds `clock`/`reset` by port name and runs `USER_CYCLES` iterations.
+
+### Verilog emission (AST to behavioral Verilog)
+
+`src/hdl/verilog_emit.h` re-emits any in-subset design as clean, synthesizable Verilog (`VerilogEmitter::emit(name, ast)`): port lists are collected from declarations, `register` becomes `reg`, everything else passes through. Not wired into the firmware boot path; exercised on host and in CI:
+
+- `host_test/test_hdl.cpp` — byte-exact golden emissions (AND, blinker, counter checks)
+- `host_test/tb_*.v` — Icarus Verilog testbenches simulated in CI, diffed against fabric golden vectors
+- `host_test/golden_counter.v` — synthesized in CI (`yosys synth -top counter`)
+
+Known emission limits (shared with the parser, not emitter bugs): chained operators (`a & b & c`) collapse in the AST; multi-operand `if` conditions (`a == b`) are emitted as `1'b1` with a WARNING comment; `+` emits with carry while the fabric maps it carry-less — excluded from equivalence by design.
 
 ## Examples
 

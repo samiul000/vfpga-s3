@@ -28,6 +28,29 @@ jobs:
             host_test/test_hdl.cpp \
             src/hdl/lexer.cpp src/hdl/parser.cpp \
             src/hdl/netlist.cpp src/hdl/mapper.cpp \
+            src/hdl/verilog_emit.cpp \
             -o /tmp/test_hdl
       - name: Run HDL toolchain tests
         run: /tmp/test_hdl
+
+  verilog-sim-synth:
+    # Simulates the VerilogEmitter golden outputs; `+` is excluded from
+    # equivalence by design (fabric maps it carry-less, Verilog carries).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Icarus Verilog and Yosys
+        run: sudo apt-get update && sudo apt-get install -y iverilog yosys
+      - name: Simulate emitted designs
+        run: |
+          for tb in tb_and tb_xor tb_counter tb_blinker; do
+            iverilog -Ihost_test -o /tmp/$tb host_test/$tb.v || exit 1
+            vvp /tmp/$tb | tee /tmp/$tb.log || exit 1
+            grep -q "PASS" /tmp/$tb.log || exit 1
+            if grep -q "FAIL" /tmp/$tb.log; then exit 1; fi
+          done
+      - name: Synthesis smoke test (counter)
+        run: |
+          yosys -p "read_verilog host_test/golden_counter.v; synth -top counter; stat" \
+            | tee /tmp/yosys.log
+          grep -q "Number of cells" /tmp/yosys.log
