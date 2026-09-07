@@ -92,8 +92,9 @@ end
 | Operator | Meaning | LUT Truth Table |
 |----------|---------|-----------------|
 | `&`      | AND     | `0x8000`        |
-| `\|`     | OR      | `0xFE00`        |
-| `^`      | XOR     | `0x6969`        |
+| `\|`     | OR      | `0xFFFE`        |
+| `^`      | XOR     | `0x6666`        |
+| `!`      | NOT (unary prefix, e.g. `!a`) | `0x5555` |
 | `+`      | ADD     | `0x6666` (carry-less) |
 | `==`     | EQUAL   | `0x8000`        |
 | `!=`     | NOT EQ  | `0x7FFF`        |
@@ -122,7 +123,7 @@ This HDL is a defined synthesizable subset, not full Verilog/VHDL. Anything outs
 | `assign` | Combinational continuous assignment |
 | `always @(posedge clk)` | Single clocked block per register |
 | `if` / `else` (inside `always`, single-statement) | Maps to MUX LUTs |
-| Operators `& \| ^ + == !=` | See operator table above |
+| Operators `& \| ^ ! + == !=` | See operator table above |
 | Number literals (dec/hex/bin, sized) | See literals above |
 
 ### Unsupported (parser rejects or ignores)
@@ -134,13 +135,13 @@ This HDL is a defined synthesizable subset, not full Verilog/VHDL. Anything outs
 | `#delays`, `@(negedge)`, multi-clock domains | No timing model; single posedge clock only |
 | Multiple `always` blocks driving the same signal | Single-driver rule |
 | `case`/`for`/`while`/`function`/`task` | Not in the subset (use `if`/`else` chains) |
-| System tasks (`$display`, etc.) | No simulation backend |
+| System tasks (`$display`, etc.) | No `$display` in the subset; verify with host testbenches instead ([SIMULATOR.md](SIMULATOR.md)) |
 
 ### Known single-LUT architectural limits
 
 - `+` on buses generates a ripple-carry adder (XOR3 sum + MAJ3 carry LUTs per bit), so multi-bit addition propagates carries correctly. A lone `+` LUT in isolation remains carry-less (`0x6666`) — the carry lives in the LUT network, not in one cell.
 - Bus registers and bus logic expand per bit (one FF per bit, per-bit MUX/data LUTs); width-1 designs map exactly as before.
-- Each LUT has 4 inputs; truth tables must be symmetric in the unused 4th input or it is tied to GND.
+- Each LUT has 4 inputs. Unused inputs must be don't-care under the mapped truth table; the host simulator replicates input 0 there (firmware reads net 0 — see [SIMULATOR.md](SIMULATOR.md#8-known-divergences-from-firmware-all-covered-by-host-tests)). MUX LUTs tie the 4th input to GND explicitly.
 - Exhaustive auto-test covers designs with **<= 8 inputs** (2^N combinations); larger designs must set `USER_TEST_INPUTS`.
 - Sequential auto-test finds `clock`/`reset` by port name and runs `USER_CYCLES` iterations.
 

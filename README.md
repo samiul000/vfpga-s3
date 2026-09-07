@@ -5,7 +5,7 @@
 
 <h4>Software-defined virtual FPGA on ESP32-S3 N16R8. UP5K-class LUT capacity (4,096 LUT4s) entirely in software, with a full HDL toolchain and an integrated RV32I RISC-V CPU. Reconfigurability with zero hardware barrier to entry: software-defined logic on a low-cost microcontroller.</h4>
 
-<p><b>51/51 automated tests PASS on hardware</b> · 4,096 LUT4s · RV32I CPU · HDL toolchain · CI: firmware build + HDL host tests</p>
+<p><b>51/51 automated tests PASS on hardware</b> · 4,096 LUT4s · RV32I CPU · HDL toolchain · Host FPGA simulator · CI: firmware build + HDL/sim host tests</p>
 </div>
 
 ---
@@ -160,6 +160,27 @@ See [HDL_GUIDE.md](docs/HDL_GUIDE.md) for full syntax and examples.
 
 The same designs can also be emitted as synthesizable Verilog (`src/hdl/verilog_emit.h`) and checked with Icarus Verilog simulation plus a Yosys synthesis smoke test in CI.
 
+## No-Board Workflow (Host Simulation)
+
+Learn the FPGA flow without hardware: compile, simulate with a testbench, and inspect waveforms in GTKWave. See [SIMULATOR.md](docs/SIMULATOR.md) for the full guide.
+
+```bash
+# build the host CLI (C++17)
+g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
+  -Ihost_test/simulator -Ihost_test/waveform -Ihost_test/testbench \
+  tools/cli/main.cpp host_test/simulator/sim.cpp \
+  host_test/testbench/tb.cpp host_test/testbench/tb_exec.cpp \
+  host_test/testbench/auto_tb.cpp \
+  host_test/waveform/vcd.cpp host_test/waveform/gtkwave.cpp \
+  src/hdl/lexer.cpp src/hdl/parser.cpp \
+  src/hdl/netlist.cpp src/hdl/mapper.cpp \
+  -o build/vfpga
+
+# verify a tutorial design and open the waveform
+build/vfpga verify examples/tutorial/06_counter/design.vhdl \
+  --tb examples/tutorial/06_counter/design.tb --wave --open
+```
+
 ## RISC-V CPU
 
 Integrated RV32I emulator with 37 instructions, 64 KB RAM, and memory-mapped I/O.
@@ -255,6 +276,7 @@ The VFPGA-S3 does not compete with silicon FPGAs on clock speed. Its value propo
 |------|----------|
 | [INSTRUCTION.md](INSTRUCTION.md) | Full project specification and milestones |
 | [HDL_GUIDE.md](docs/HDL_GUIDE.md) | HDL syntax, examples, and pipeline usage |
+| [SIMULATOR.md](docs/SIMULATOR.md) | Host simulator, testbench DSL, VCD/GTKWave workflow (no board needed) |
 | [RISC-V.md](docs/RISC-V.md) | RV32I instruction set, API, programming examples |
 | [performance.md](docs/performance.md) | Hardware benchmarks and comparison data |
 

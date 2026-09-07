@@ -72,7 +72,7 @@ Exit codes: 0 PASS, 1 verification failure, 2 compilation failure,
 3 testbench syntax error, 4 simulation error, 5 GTKWave unavailable
 (never fails an otherwise passing simulation).
 
-Build the CLI:
+Build the CLI (any C++17 compiler; CI uses Ubuntu g++):
 
 ```bash
 g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
@@ -85,6 +85,27 @@ g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
   src/hdl/netlist.cpp src/hdl/mapper.cpp \
   -o build/vfpga
 ```
+
+### Windows (MSYS2 UCRT64)
+
+```bash
+pacman -S mingw-w64-ucrt-x86_64-gtkwave mingw-w64-ucrt-x86_64-clang
+```
+
+then build from a UCRT64 shell with `clang++` in place of `g++`,
+adding `-static` to the link:
+
+```bash
+clang++ -std=c++17 -Wall -Isrc/hdl ... -static -o build/vfpga.exe
+```
+
+Two environment gotchas, both handled: stock MinGW.org GCC 6.3 is
+pre-C++17 and cannot build this (use Clang or UCRT64 GCC), and a
+dynamic link resolves `libstdc++-6.dll` from `C:\WINDOWS\SYSTEM32`
+(where the old MinGW dropped its DLLs) ahead of MSYS2's — static
+linking sidesteps that. `vfpga wave` also probes the usual MSYS2 and
+installer paths when `gtkwave` is not on PATH; adding
+`C:\msys64\ucrt64\bin` to the Windows PATH is the durable fix.
 
 ## 4. Examples
 
@@ -106,7 +127,8 @@ register, counter, shift register, toggle FSM — each with
 
 VCDs go to `build/waves/<design>.vcd` (deterministic `!`,`"`,`#`… ids,
 change-only dump, `top` scope, `top.fabric` for internal nets).
-Install GTKWave (`apt install gtkwave`, `brew install gtkwave`, or
+Install GTKWave (`apt install gtkwave`, `brew install gtkwave`,
+`pacman -S mingw-w64-ucrt-x86_64-gtkwave` on MSYS2, or
 gtk-wave.mikekohn.net on Windows) and open with `vfpga wave` or
 `--open`. Buses render as vectors; switch radix in GTKWave as needed.
 
@@ -141,5 +163,6 @@ gtk-wave.mikekohn.net on Windows) and open with `vfpga wave` or
    scalar logic drives whole nets, bus logic drives bit nets. The
    executor drives both and reads buses preferentially (scalars by LSB,
    since bitwise NOT yields `~v` over 32-bit signals).
-4. **`!` (NOT) needs the parser fix in this repo** (`parse_unary_expr`
-   now sets `op = "!"`; previously it parsed as PASS).
+4. **`!` (NOT) is wired through the parser** (`parse_unary_expr` sets
+   `op = "!"`, mapped to the `0x5555` LUT; previously it silently parsed
+   as PASS).
