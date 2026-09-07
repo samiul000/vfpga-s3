@@ -1,0 +1,20 @@
+testbench shift_tb {
+    timescale 1ns;
+    clock clock period=10ns;
+
+    drive en = 1;
+    drive din = 1;
+    wait rising_edge(clock);
+    assert q == 0;
+
+    drive din = 0;
+    wait rising_edge(clock);
+    assert q == 1;
+
+    wait rising_edge(clock);
+    assert q == 0;
+
+    trace clock;
+    trace din;
+    trace q;
+}

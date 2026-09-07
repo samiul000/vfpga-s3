@@ -45,9 +45,9 @@ desktop.ini
 
 # Extras
 INSTRUCTION.md
+INSTRUCTION_SIM.md
 docs/generate_graphics.py
 docs/gen_abstract.py
-tools/
 host_test/gen_soc_layout.py
 
 # PlatformIO

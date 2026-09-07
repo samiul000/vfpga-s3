@@ -1,0 +1,31 @@
+testbench full_adder_tb {
+    drive a = 0;
+    drive b = 0;
+    drive cin = 0;
+    assert s == 0;
+    assert cout == 0;
+
+    drive a = 1;
+    drive b = 0;
+    drive cin = 0;
+    assert s == 1;
+    assert cout == 0;
+
+    drive a = 1;
+    drive b = 1;
+    drive cin = 0;
+    assert s == 0;
+    assert cout == 1;
+
+    drive a = 1;
+    drive b = 1;
+    drive cin = 1;
+    assert s == 1;
+    assert cout == 1;
+
+    trace a;
+    trace b;
+    trace cin;
+    trace s;
+    trace cout;
+}

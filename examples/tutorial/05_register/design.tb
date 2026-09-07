@@ -1,0 +1,16 @@
+testbench dreg_tb {
+    timescale 1ns;
+    clock clock period=10ns;
+
+    drive d = 1;
+    wait rising_edge(clock);
+    assert q == 1;
+
+    drive d = 0;
+    wait rising_edge(clock);
+    assert q == 0;
+
+    trace clock;
+    trace d;
+    trace q;
+}

@@ -1,0 +1,25 @@
+testbench fsm_tb {
+    timescale 1ns;
+    clock clock period=10ns;
+    reset reset active_high;
+
+    drive reset = 1;
+    drive go = 0;
+    wait 20ns;
+    drive reset = 0;
+
+    wait rising_edge(clock);
+    assert out == 0;
+
+    drive go = 1;
+    wait rising_edge(clock);
+    assert out == 1;
+
+    wait rising_edge(clock);
+    assert out == 0;
+
+    trace clock;
+    trace reset;
+    trace go;
+    trace out;
+}

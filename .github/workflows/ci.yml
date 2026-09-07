@@ -33,6 +33,84 @@ jobs:
       - name: Run HDL toolchain tests
         run: /tmp/test_hdl
 
+  sim-core-host-test:
+    # Host-only simulator core (host_test/simulator): HDL -> netlist ->
+    # mapper -> Simulator. Needs C++17 like the toolchain job above.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile simulator core test with host g++
+        run: |
+          g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
+            -Ihost_test/simulator \
+            host_test/simulator/test_sim.cpp \
+            host_test/simulator/sim.cpp \
+            src/hdl/lexer.cpp src/hdl/parser.cpp \
+            src/hdl/netlist.cpp src/hdl/mapper.cpp \
+            -o /tmp/test_sim
+      - name: Run simulator core tests
+        run: /tmp/test_sim
+
+  sim-tb-vcd-test:
+    # Testbench DSL + executor + VCD writer (stages 5-10).
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile TB and VCD tests with host g++
+        run: |
+          g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
+            -Ihost_test/simulator -Ihost_test/waveform -Ihost_test/testbench \
+            host_test/testbench/test_tb.cpp \
+            host_test/testbench/tb.cpp host_test/testbench/tb_exec.cpp \
+            host_test/testbench/auto_tb.cpp \
+            host_test/waveform/vcd.cpp \
+            host_test/simulator/sim.cpp \
+            src/hdl/lexer.cpp src/hdl/parser.cpp \
+            src/hdl/netlist.cpp src/hdl/mapper.cpp \
+            -o /tmp/test_tb
+          g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
+            -Ihost_test/simulator -Ihost_test/waveform \
+            host_test/waveform/test_vcd.cpp \
+            host_test/waveform/vcd.cpp \
+            host_test/simulator/sim.cpp \
+            src/hdl/lexer.cpp src/hdl/parser.cpp \
+            src/hdl/netlist.cpp src/hdl/mapper.cpp \
+            -o /tmp/test_vcd
+      - name: Run TB and VCD tests
+        run: /tmp/test_tb && /tmp/test_vcd
+
+  sim-cli-smoke:
+    # End-to-end CLI: compile/signals/sim/verify over examples + tutorials.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build vfpga CLI with host g++
+        run: |
+          g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
+            -Ihost_test/simulator -Ihost_test/waveform -Ihost_test/testbench \
+            tools/cli/main.cpp \
+            host_test/simulator/sim.cpp \
+            host_test/testbench/tb.cpp host_test/testbench/tb_exec.cpp \
+            host_test/testbench/auto_tb.cpp \
+            host_test/waveform/vcd.cpp host_test/waveform/gtkwave.cpp \
+            src/hdl/lexer.cpp src/hdl/parser.cpp \
+            src/hdl/netlist.cpp src/hdl/mapper.cpp \
+            -o /tmp/vfpga
+      - name: CLI smoke over examples
+        run: |
+          /tmp/vfpga compile examples/counter.vhdl
+          /tmp/vfpga signals examples/counter.vhdl
+          /tmp/vfpga sim examples/counter.vhdl --wave
+          /tmp/vfpga verify examples/counter.vhdl --wave
+          test -f build/waves/counter.vcd
+      - name: CLI verify over tutorials
+        run: |
+          for t in 01_and_gate 02_mux 03_half_adder 04_full_adder \
+                   05_register 06_counter 07_shift_register 08_fsm; do
+            /tmp/vfpga verify examples/tutorial/$t/design.vhdl \
+              --tb examples/tutorial/$t/design.tb --wave || exit 1
+          done
+
   verilog-sim-synth:
     # Simulates the VerilogEmitter golden outputs; `+` agrees via the
     # toolchain's ripple-carry logic, so counter equivalence holds.

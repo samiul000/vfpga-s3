@@ -1,0 +1,22 @@
+testbench counter_tb {
+    timescale 1ns;
+    clock clock period=10ns;
+    reset reset active_high;
+
+    drive reset = 1;
+    wait 20ns;
+    drive reset = 0;
+
+    wait rising_edge(clock);
+    assert count == 1;
+
+    wait rising_edge(clock);
+    assert count == 2;
+
+    wait rising_edge(clock);
+    assert count == 3;
+
+    trace clock;
+    trace reset;
+    trace count;
+}
