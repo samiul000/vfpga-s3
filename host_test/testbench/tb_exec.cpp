@@ -37,28 +37,27 @@ bool TbExecutor::bus_nets(const std::string &base, std::vector<uint16_t> &nets) 
 }
 
 uint32_t TbExecutor::read_value(const std::string &name, bool &is_bus) {
+    // 1-bit ports exist as BOTH whole nets and [0] bit nets; scalar logic
+    // drives whole nets, bus logic drives bit nets. Prefer a nonzero bus
+    // assembly, else fall back to the whole net.
+    std::vector<uint16_t> bits;
+    uint32_t bv = 0;
+    if (bus_nets(name, bits)) {
+        is_bus = bits.size() > 1;
+        for (size_t i = 0; i < bits.size() && i < 32; ++i)
+            if (sim_.read(bits[i])) bv |= (1U << i);
+        if (bv) return bv;
+    }
     uint16_t net = 0;
     if (resolve_one(name, net)) {
-        // A bare bus base (e.g. "count") may also resolve as a whole net;
-        // prefer per-bit assembly when bit nets exist.
-        std::vector<uint16_t> bits;
-        if (bus_nets(name, bits)) {
-            is_bus = true;
-            uint32_t v = 0;
-            for (size_t i = 0; i < bits.size() && i < 32; ++i)
-                if (sim_.read(bits[i])) v |= (1U << i);
-            return v;
-        }
         is_bus = false;
-        return sim_.read(net);
+        // Scalars follow the 1-bit convention; bitwise NOT (~) is the
+        // only op that breaks it (yields ~v), so compare by LSB.
+        return sim_.read(net) & 1;
     }
-    std::vector<uint16_t> bits;
-    if (bus_nets(name, bits)) {
-        is_bus = true;
-        uint32_t v = 0;
-        for (size_t i = 0; i < bits.size() && i < 32; ++i)
-            if (sim_.read(bits[i])) v |= (1U << i);
-        return v;
+    if (!bits.empty()) {
+        is_bus = bits.size() > 1;
+        return bv;
     }
     is_bus = false;
     return 0;
@@ -87,17 +86,19 @@ void TbExecutor::suggest(const std::string &name, ExecResult &r, size_t line) {
 
 void TbExecutor::write_value(const std::string &name, uint64_t v,
                              ExecResult &r, size_t line) {
+    // Drive whole net AND bit nets: scalar logic reads whole nets,
+    // bus-expanded logic reads bit nets; both must agree.
     uint16_t net = 0;
     std::vector<uint16_t> bits;
-    if (bus_nets(name, bits)) {
-        for (size_t i = 0; i < bits.size(); ++i)
-            sim_.write_input(bits[i], (uint32_t)((v >> i) & 1));
-    } else if (resolve_one(name, net)) {
-        sim_.write_input(net, (uint32_t)v);
-    } else {
+    bool have_whole = resolve_one(name, net);
+    bool have_bits = bus_nets(name, bits);
+    if (!have_whole && !have_bits) {
         suggest(name, r, line);
         return;
     }
+    if (have_whole) sim_.write_input(net, (uint32_t)v);
+    for (size_t i = 0; i < bits.size(); ++i)
+        sim_.write_input(bits[i], (uint32_t)((v >> i) & 1));
     sim_.eval_combinational();
     tr_.record(sim_.time_ns(), sim_);
 }
@@ -227,13 +228,20 @@ void TbExecutor::exec_list(const std::vector<TbCmd> &cmds, ExecResult &r) {
             case TbCmd::Type::TRACE: {
                 uint16_t net = 0;
                 std::vector<uint16_t> bits;
-                if (bus_nets(c.name, bits)) {
-                    for (size_t i = 0; i < bits.size(); ++i) tr_.watch(bits[i]);
-                } else if (resolve_one(c.name, net)) {
-                    tr_.watch(net);
-                } else {
+                bool have_whole = resolve_one(c.name, net);
+                bool have_bits = bus_nets(c.name, bits);
+                if (!have_whole && !have_bits) {
                     suggest(c.name, r, c.line);
                     break;
+                }
+                // Multi-bit buses live on bit nets; single-bit signals
+                // live on the whole net (scalar logic drives whole nets).
+                if (have_bits && bits.size() > 1) {
+                    for (size_t i = 0; i < bits.size(); ++i) tr_.watch(bits[i]);
+                } else if (have_whole) {
+                    tr_.watch(net);
+                } else if (have_bits) {
+                    for (size_t i = 0; i < bits.size(); ++i) tr_.watch(bits[i]);
                 }
                 tr_.record(sim_.time_ns(), sim_);
                 break;

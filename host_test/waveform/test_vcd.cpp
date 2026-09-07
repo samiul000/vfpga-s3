@@ -61,7 +61,7 @@ int main() {
     std::vector<uint16_t> nets = tr.watched();
     std::vector<VcdSignal> sigs = vcd_signals(sim, nets);
     CHECK(sigs.size() == 3, "3 VCD signals");
-    const char *path = "/tmp/vfpga_test.vcd";
+    const char *path = "vfpga_test.vcd";  // cwd-relative: no /tmp on Windows
     CHECK(write_vcd(path, "1ns", sigs, tr.samples()), "VCD written");
 
     std::string vcd = read_file(path);

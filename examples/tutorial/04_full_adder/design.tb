@@ -1,4 +1,10 @@
 testbench full_adder_tb {
+    trace a;
+    trace b;
+    trace cin;
+    trace s;
+    trace cout;
+
     drive a = 0;
     drive b = 0;
     drive cin = 0;
@@ -22,10 +28,4 @@ testbench full_adder_tb {
     drive cin = 1;
     assert s == 1;
     assert cout == 1;
-
-    trace a;
-    trace b;
-    trace cin;
-    trace s;
-    trace cout;
 }

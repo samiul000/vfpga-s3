@@ -43,6 +43,10 @@ Testbench auto_testbench(const Netlist &nl, const MappedConfig &cfg,
     std::vector<std::string> io = nl.input_names();
     for (size_t i = 0; i < nl.output_names().size(); ++i)
         io.push_back(nl.output_names()[i]);
+    // Traces record from declaration on, so declare them FIRST for a full
+    // waveform (a `trace` at the end would only capture the final state).
+    for (size_t i = 0; i < io.size(); ++i)
+        tb.cmds.push_back(trace_cmd(io[i], ln++));
 
     bool sequential = !cfg.ffs.empty();
     const char *clk = find_input(nl, "clock", "clk");
@@ -101,7 +105,5 @@ Testbench auto_testbench(const Netlist &nl, const MappedConfig &cfg,
         }
     }
 
-    for (size_t i = 0; i < io.size(); ++i)
-        tb.cmds.push_back(trace_cmd(io[i], ln++));
     return tb;
 }

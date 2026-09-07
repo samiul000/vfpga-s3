@@ -72,15 +72,15 @@ int main() {
         };
         // reset asserted -> count 0 after a clock
         sim.write_input((uint16_t)reset, 1);
-        sim.eval_combinational();
         sim.step();
+        sim.eval_combinational();  // refresh output nets past the step
         CHECK(read_count() == 0, "Counter reset clears to 0");
         // release reset -> count 1..3 on successive clocks
         sim.write_input((uint16_t)reset, 0);
         bool ok = true;
         for (uint32_t expect = 1; expect <= 3; ++expect) {
-            sim.eval_combinational();
             sim.step();
+            sim.eval_combinational();
             uint32_t got = read_count();
             if (got != expect) {
                 printf("[INFO] count=%u expected=%u\n", got, expect);
@@ -110,7 +110,8 @@ int main() {
                 sim.eval_combinational();
                 if (sim.read((uint16_t)o) != (uint32_t)(av | bv)) ok = false;
                 if (sim.read((uint16_t)x) != (uint32_t)(av ^ bv)) ok = false;
-                if (sim.read((uint16_t)n) != (uint32_t)(!av)) ok = false;
+                // NOT is bitwise (~) over 32-bit signals; scalars read by LSB.
+                if ((sim.read((uint16_t)n) & 1) != (uint32_t)(!av)) ok = false;
             }
         CHECK(ok, "OR/XOR/NOT simulate correctly");
     }
@@ -169,8 +170,8 @@ int main() {
                     sim.write_input((uint16_t)sel, (uint32_t)sv);
                     sim.write_input((uint16_t)a, (uint32_t)av);
                     sim.write_input((uint16_t)b, (uint32_t)bv);
-                    sim.eval_combinational();
                     sim.step();
+                    sim.eval_combinational();
                     if (sim.read((uint16_t)y) != (uint32_t)(sv ? av : bv)) ok = false;
                 }
         CHECK(ok, "2:1 MUX selects correctly");
@@ -191,10 +192,12 @@ int main() {
         int16_t d = sim.resolve("d"), q = sim.resolve("q");
         CHECK(d >= 0 && q >= 0, "D-register nets resolve");
         sim.write_input((uint16_t)d, 1);
-        sim.eval_combinational(); sim.step();
+        sim.step();
+        sim.eval_combinational();
         bool ok = sim.read((uint16_t)q) == 1;
         sim.write_input((uint16_t)d, 0);
-        sim.eval_combinational(); sim.step();
+        sim.step();
+        sim.eval_combinational();
         ok = ok && sim.read((uint16_t)q) == 0;
         CHECK(ok, "D-register captures input on clock");
     }

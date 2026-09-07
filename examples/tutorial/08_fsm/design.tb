@@ -3,6 +3,11 @@ testbench fsm_tb {
     clock clock period=10ns;
     reset reset active_high;
 
+    trace clock;
+    trace reset;
+    trace go;
+    trace out;
+
     drive reset = 1;
     drive go = 0;
     wait 20ns;
@@ -17,9 +22,4 @@ testbench fsm_tb {
 
     wait rising_edge(clock);
     assert out == 0;
-
-    trace clock;
-    trace reset;
-    trace go;
-    trace out;
 }

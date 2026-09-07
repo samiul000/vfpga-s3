@@ -48,8 +48,17 @@ void Simulator::eval_combinational() {
     // Do NOT iterate to "stable": register feedback shares the LUT output
     // net (FF D == Q), so re-evaluation would oscillate by design.
     for (const auto &lut : cfg_->luts) {
-        // Firmware parity: missing inputs read net 0 (CoreLut zero-init).
-        uint16_t in[4] = {0, 0, 0, 0};
+        // Padding for <4 inputs: replicate input 0. All mapped truth
+        // tables are either idempotent in the padded positions
+        // (AND/OR/XOR/PASS/NOT over a,b,a,a == op over a,b) or
+        // don't-care there (XOR3/MAJ3 ignore d; MUX ties d to GND
+        // explicitly). NOTE: firmware pads with net 0 instead, which
+        // mis-evaluates 2-input gates whenever net 0 disagrees (e.g. OR
+        // stuck at 1 when net 0 is 1); the acceptance tests (§66: AND,
+        // OR, XOR, NOT must simulate correctly) require this fix.
+        uint16_t pad =
+            lut.input_net_ids.empty() ? 0 : lut.input_net_ids[0];
+        uint16_t in[4] = {pad, pad, pad, pad};
         for (size_t i = 0; i < lut.input_net_ids.size() && i < 4; ++i)
             in[i] = lut.input_net_ids[i];
         values_[lut.output_net_id] =

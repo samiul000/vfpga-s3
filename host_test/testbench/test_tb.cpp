@@ -114,6 +114,9 @@ int main() {
                   "    timescale 1ns;\n"
                   "    clock clock period=10ns;\n"
                   "    reset reset active_high;\n"
+                  "    trace clock;\n"
+                  "    trace reset;\n"
+                  "    trace count;\n"
                   "    drive reset = 1;\n"
                   "    wait 20ns;\n"
                   "    drive reset = 0;\n"
@@ -123,9 +126,6 @@ int main() {
                   "    assert count == 2;\n"
                   "    wait rising_edge(clock);\n"
                   "    assert count == 3;\n"
-                  "    trace clock;\n"
-                  "    trace reset;\n"
-                  "    trace count;\n"
                   "}\n",
                   tb, errors),
               "counter tb parses");
@@ -134,7 +134,7 @@ int main() {
         CHECK(r.failed == 0 && r.passed == 3, "counter reaches 1..3");
 
         std::vector<VcdSignal> sigs = vcd_signals(sim, tr.watched());
-        CHECK(write_vcd("/tmp/tb_counter.vcd", "1ns", sigs, tr.samples()),
+        CHECK(write_vcd("tb_counter.vcd", "1ns", sigs, tr.samples()),
               "counter VCD written");
 
         // failing assertion diagnostics

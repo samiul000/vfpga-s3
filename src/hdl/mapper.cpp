@@ -100,7 +100,7 @@ MappedConfig Mapper::map_to_luts(const Netlist &netlist) {
         }
     }
 
-    ESP_LOGI(TAG, "Mapped: %zu LUTs, %zu FFs, %zu nets, %zu constants",
+    ESP_LOGI(TAG, "Mapped: %zu LUTs, %zu FFs, %u nets, %zu constants",
              cfg.luts.size(), cfg.ffs.size(), cfg.total_nets, cfg.constants.size());
     return cfg;
 }

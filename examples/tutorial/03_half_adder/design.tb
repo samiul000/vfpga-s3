@@ -1,4 +1,9 @@
 testbench half_adder_tb {
+    trace a;
+    trace b;
+    trace s;
+    trace c;
+
     drive a = 0;
     drive b = 0;
     assert s == 0;
@@ -18,9 +23,4 @@ testbench half_adder_tb {
     drive b = 1;
     assert s == 0;
     assert c == 1;
-
-    trace a;
-    trace b;
-    trace s;
-    trace c;
 }

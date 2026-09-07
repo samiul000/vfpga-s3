@@ -2,6 +2,12 @@ testbench mux_tb {
     timescale 1ns;
     clock clock period=10ns;
 
+    trace clock;
+    trace sel;
+    trace a;
+    trace b;
+    trace y;
+
     drive sel = 0;
     drive a = 0;
     drive b = 1;
@@ -15,10 +21,4 @@ testbench mux_tb {
     drive a = 1;
     wait rising_edge(clock);
     assert y == 1;
-
-    trace clock;
-    trace sel;
-    trace a;
-    trace b;
-    trace y;
 }

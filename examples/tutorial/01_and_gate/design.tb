@@ -1,4 +1,8 @@
 testbench and_tb {
+    trace a;
+    trace b;
+    trace y;
+
     drive a = 0;
     drive b = 0;
     assert y == 0;
@@ -14,8 +18,4 @@ testbench and_tb {
     drive a = 1;
     drive b = 1;
     assert y == 1;
-
-    trace a;
-    trace b;
-    trace y;
 }

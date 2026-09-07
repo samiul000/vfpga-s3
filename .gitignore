@@ -34,6 +34,10 @@ export/
 *.hex
 *.map
 
+# Simulation artifacts
+*.vcd
+*.gtkw
+
 # OS files
 .DS_Store
 Thumbs.db

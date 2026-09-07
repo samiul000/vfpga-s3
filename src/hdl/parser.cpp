@@ -152,6 +152,7 @@ AstNode Parser::parse_unary_expr() {
     if (match(TokenType::OP_NOT)) {
         AstNode node;
         node.type = AstNode::Type::EXPR_NOT;
+        node.op = "!";
         node.child_idx.push_back(-1);
         AstNode child = parse_primary();
         node.children.push_back(child.name);

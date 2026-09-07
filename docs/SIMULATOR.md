@@ -52,9 +52,10 @@ testbench counter_tb {
 
 Time is logical nanoseconds (default timescale 1 ns), unrelated to ESP32
 frequency. Each rising edge of the first declared clock is one design cycle.
-Failures print test name, time, signal, expected and actual values, plus
-"did you mean" suggestions for unknown signals (all errors carry line
-numbers).
+`trace` records from its declaration line on — put traces near the top for a
+full waveform. Failures print test name, time, signal, expected and actual
+values, plus "did you mean" suggestions for unknown signals (all errors
+carry line numbers).
 
 ## 3. Commands
 
@@ -125,3 +126,20 @@ gtk-wave.mikekohn.net on Windows) and open with `vfpga wave` or
   designs (see tutorial 07).
 - Auto testbenches generate waveforms only, never assertions.
 - Cross-check against `verilog_emit` + Icarus where in doubt (CI does).
+
+## 8. Known divergences from firmware (all covered by host tests)
+
+1. **Single ordered LUT pass, no stabilize loop.** Register feedback
+   shares the LUT output net (FF D == Q), so re-evaluation would
+   oscillate by design; firmware's `run_cycles` is likewise one pass.
+2. **Missing LUT inputs replicate input 0.** Firmware ties them to
+   net 0, which mis-evaluates 2-input gates whenever net 0 disagrees
+   (e.g. OR stuck at 1 when net 0 is 1). Replication is exact for every
+   mapped truth table (idempotent 1–2 input ops, don't-care 4th input
+   on XOR3/MAJ3, explicit GND on MUX).
+3. **Whole nets + bit nets.** 1-bit ports exist as both `x` and `x[0]`;
+   scalar logic drives whole nets, bus logic drives bit nets. The
+   executor drives both and reads buses preferentially (scalars by LSB,
+   since bitwise NOT yields `~v` over 32-bit signals).
+4. **`!` (NOT) needs the parser fix in this repo** (`parse_unary_expr`
+   now sets `op = "!"`; previously it parsed as PASS).

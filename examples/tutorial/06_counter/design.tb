@@ -3,6 +3,10 @@ testbench counter_tb {
     clock clock period=10ns;
     reset reset active_high;
 
+    trace clock;
+    trace reset;
+    trace count;
+
     drive reset = 1;
     wait 20ns;
     drive reset = 0;
@@ -15,8 +19,4 @@ testbench counter_tb {
 
     wait rising_edge(clock);
     assert count == 3;
-
-    trace clock;
-    trace reset;
-    trace count;
 }
