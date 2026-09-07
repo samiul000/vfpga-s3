@@ -27,7 +27,7 @@ VCD writer (host_test/waveform/vcd.cpp) → GTKWave
 
 Key semantic (firmware parity): one ordered LUT pass per evaluation; nets
 hold state between passes. Register feedback shares the LUT output net
-(FF D == Q), so there is deliberately **no** iterate-to-stable loop —
+(FF D == Q), so there is deliberately **no** iterate-to-stable loop
 re-evaluating would oscillate by design. Missing LUT inputs read net 0,
 exactly like `CoreLut` zero-init on firmware.
 
@@ -52,7 +52,7 @@ testbench counter_tb {
 
 Time is logical nanoseconds (default timescale 1 ns), unrelated to ESP32
 frequency. Each rising edge of the first declared clock is one design cycle.
-`trace` records from its declaration line on — put traces near the top for a
+`trace` records from its declaration line on put traces near the top for a
 full waveform. Failures print test name, time, signal, expected and actual
 values, plus "did you mean" suggestions for unknown signals (all errors
 carry line numbers).
@@ -102,12 +102,17 @@ clang++ -std=c++17 -Wall -Isrc/hdl ... -static -o build/vfpga.exe
 Two environment gotchas, both handled: stock MinGW.org GCC 6.3 is
 pre-C++17 and cannot build this (use Clang or UCRT64 GCC), and a
 dynamic link resolves `libstdc++-6.dll` from `C:\WINDOWS\SYSTEM32`
-(where the old MinGW dropped its DLLs) ahead of MSYS2's — static
+(where the old MinGW dropped its DLLs) ahead of MSYS2's static
 linking sidesteps that. `vfpga wave` also probes the usual MSYS2 and
 installer paths when `gtkwave` is not on PATH; adding
 `C:\msys64\ucrt64\bin` to the Windows PATH is the durable fix.
 
 ## 4. Examples
+
+Run these from the repo root (paths below are root-relative, and the
+binary is `build/vfpga`). Inside a tutorial directory, the short form
+`vfpga verify design.vhdl --tb design.tb --wave --open` works instead —
+see each tutorial's README for both variants.
 
 ```bash
 vfpga compile examples/counter.vhdl
@@ -120,7 +125,7 @@ vfpga wave build/waves/counter.vcd
 ```
 
 Tutorials `examples/tutorial/01_..08_`: and_gate, mux, half/full adder,
-register, counter, shift register, toggle FSM — each with
+register, counter, shift register, toggle FSM each with
 `design.vhdl`, `design.tb`, `README.md`.
 
 ## 5. VCD & GTKWave
