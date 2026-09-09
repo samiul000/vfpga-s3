@@ -52,7 +52,7 @@ jobs:
         run: /tmp/test_sim
 
   sim-tb-vcd-test:
-    # Testbench DSL + executor + VCD writer (stages 5-10).
+    # Testbench DSL + executor + VCD writer
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

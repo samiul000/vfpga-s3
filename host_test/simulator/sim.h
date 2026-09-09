@@ -1,12 +1,10 @@
 #pragma once
-// Host-only VFPGA simulator core (Stage 2). No ESP-IDF dependencies.
 // Mirrors src/vfpga/vfpga_core.cpp semantics with two deliberate fixes
 // (documented in sim.cpp + docs/SIMULATOR.md):
 //  - single ordered pass, no stabilize loop (register feedback shares nets)
 //  - missing LUT inputs replicate input 0 (firmware reads net 0, which
 //    breaks 2-input gates; acceptance tests require correct gates)
-// no Clock/EventQueue classes yet; a SimTime counter + advance()
-// covers stages 2-3. Add scheduler classes when the TB executor (stage 9) needs them.
+// no Clock/EventQueue classes yet.
 #include <cstdint>
 #include <string>
 #include <vector>

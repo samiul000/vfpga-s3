@@ -1,7 +1,4 @@
 #pragma once
-// Host-only testbench DSL lexer/parser (Stage 8). Small deterministic
-// language (§18-20); parses to a command list, never executes raw text (§25).
-// Errors carry line numbers (§26). Header-only decl, impl in tb.cpp.
 #include <cstdint>
 #include <string>
 #include <vector>

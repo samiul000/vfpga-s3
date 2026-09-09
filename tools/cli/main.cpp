@@ -1,7 +1,6 @@
-// vfpga host CLI: compile | sim | verify | signals | wave (§34-41).
+// vfpga host CLI: compile | sim | verify | signals | wave.
 // Host-only; never linked into firmware (src/CMakeLists globs src/ only).
-// Exit codes (§52): 0 PASS, 1 verification failure, 2 compilation failure,
-// 3 testbench syntax error, 4 simulation error, 5 GTKWave unavailable.
+
 #include <cstdio>
 #include <cstdlib>
 #include <string>

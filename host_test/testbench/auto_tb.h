@@ -1,6 +1,6 @@
 #pragma once
-// Automatic/default testbench generation (Stage 12). Convenience only:
-// waveform without invented assertions (§44-45). Decl here, impl below.
+// Automatic/default testbench generation. Convenience only:
+// waveform without invented assertions. Decl here, impl below.
 #include "tb.h"
 
 class Netlist;

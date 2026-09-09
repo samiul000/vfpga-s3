@@ -1,7 +1,4 @@
 #pragma once
-// Testbench executor (Stage 9): runs parsed TbCmds against a Simulator,
-// records trace, checks assertions with rich diagnostics (§23). Decl here,
-// impl in tb_exec.cpp.
 #include <string>
 #include <vector>
 

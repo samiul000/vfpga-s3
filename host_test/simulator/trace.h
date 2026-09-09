@@ -1,8 +1,7 @@
 #pragma once
-// Host-only change-based signal tracer (Stage 5). Records (time, net, value)
-// only when a watched net's value changes (§14). Header-only.
-// no timestamps per timestep, no per-signal classes; the VCD
-// writer (stage 6) groups name[N] nets into vectors from these samples.
+// Host-only change-based signal tracer. Records (time, net, value)
+// only when a watched net's value changes. Header-only.
+// no timestamps per timestep, no per-signal classes
 #include <cstdint>
 #include <vector>
 

@@ -53,6 +53,7 @@ INSTRUCTION_SIM.md
 docs/generate_graphics.py
 docs/gen_abstract.py
 host_test/gen_soc_layout.py
+tools/vfpga_compiler
 
 # PlatformIO
 .pio/

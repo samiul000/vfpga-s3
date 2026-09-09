@@ -1,5 +1,5 @@
-// Testbench DSL + executor tests (§50): parsing, errors, execution,
-// assertions, and trace->VCD wiring (stages 8-10). CI g++ -std=c++17.
+// Testbench DSL + executor tests: parsing, errors, execution,
+// assertions, and trace->VCD wiring. CI g++ -std=c++17.
 #include <cstdio>
 #include <string>
 #include "lexer.h"
