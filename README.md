@@ -6,13 +6,6 @@
 <h4>Software-defined virtual FPGA on ESP32-S3 N16R8. UP5K-class LUT capacity (4,096 LUT4s) entirely in software, with a full HDL toolchain and an integrated RV32I RISC-V CPU. Reconfigurability with zero hardware barrier to entry: software-defined logic on a low-cost microcontroller.</h4>
 
 <p><b>51/51 automated tests PASS on hardware</b> · 4,096 LUT4s · RV32I CPU · HDL toolchain · Host FPGA simulator · CI: firmware build + HDL/sim host tests</p>
-
-<p>
-  <img src="https://img.shields.io/badge/C%2B%2B-17-blue?logo=cplusplus" alt="C++17">
-  <img src="https://img.shields.io/badge/Verilog-synthesizable-orange?logo=verilog" alt="Verilog">
-  <img src="https://img.shields.io/badge/RISC--V-RV32I-green?logo=riscv" alt="RISC-V RV32I">
-  <img src="https://img.shields.io/badge/ESP32--S3-ESP--IDF_6.0-red?logo=espressif" alt="Espressif">
-</p>
 </div>
 
 ---
