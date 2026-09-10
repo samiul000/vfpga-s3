@@ -275,6 +275,7 @@ The VFPGA-S3 does not compete with silicon FPGAs on clock speed. Its value propo
 | File | Contents |
 |------|----------|
 | [INSTRUCTION.md](INSTRUCTION.md) | Full project specification and milestones |
+| [AGENTS.md](AGENTS.md) | Environment setup for AI agents (compiler, GTKWave, per-platform) |
 | [HDL_GUIDE.md](docs/HDL_GUIDE.md) | HDL syntax, examples, and pipeline usage |
 | [SIMULATOR.md](docs/SIMULATOR.md) | Host simulator, testbench DSL, VCD/GTKWave workflow (no board needed) |
 | [RISC-V.md](docs/RISC-V.md) | RV32I instruction set, API, programming examples |
