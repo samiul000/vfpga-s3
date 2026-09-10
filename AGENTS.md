@@ -1,4 +1,4 @@
-# VFPGA-S3 Agent Setup
+# VFPGA-S3 ENV Setup
 
 Environment setup for VFPGA-S3 host simulation and development.
 
@@ -11,7 +11,7 @@ uname -s
 ```
 
 Expected output: `Linux`, `Darwin` (macOS), or `MINGW64_NT-*` / `MSYS_NT-*`
-(Windows via Git Bash or MSYS2). In PowerShell, `uname` does not exist —
+(Windows via Git Bash or MSYS2). In PowerShell, `uname` does not exist
 use `$env:OS` (`Windows_NT`) instead.
 
 Follow the install steps for the detected platform below, then run the
@@ -79,6 +79,6 @@ GTKWave: <version, or "not installed (waveform viewing unavailable)">
 
 ## 4. Constraint
 
-Never add files under `src/` — `src/CMakeLists.txt` globs `src/*.cpp`,
+Never add files under `src/` -> `src/CMakeLists.txt` globs `src/*.cpp`,
 so any host-only code placed there ships to the ESP32 firmware.
 Host-only code lives in `host_test/` or `tools/`.
