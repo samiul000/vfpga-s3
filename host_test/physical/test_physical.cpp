@@ -147,7 +147,7 @@ int main() {
                                    dn, e2) &&
                   e2.find("Unsupported physical layout") != std::string::npos,
               "layout version error friendly");
-        CHECK(layout_export_svg("counter", fp, rr).find("<svg") == 0,
+        CHECK(layout_export_svg("counter", ir, fp, rr).find("<svg") == 0,
               "SVG export");
     }
 

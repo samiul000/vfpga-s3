@@ -681,51 +681,410 @@ bool layout_import_check(const std::string &json, std::string &design_out,
     return true;
 }
 
-std::string layout_export_svg(const std::string &design, const Floorplan &fp,
-                              const RouteResult &rr) {
+std::string layout_export_svg(const std::string &design, const DesignIR &ir,
+                              const Floorplan &fp, const RouteResult &rr) {
     std::string o;
-    char b[256];
+    char b[512];
+
+    // --- cell-type color map ---
+    auto cell_color = [](const std::string &cell) -> const char * {
+        if (cell == "DFF") return "#2d5";
+        if (cell == "AND2" || cell == "NAND2") return "#cc3";
+        if (cell == "OR2" || cell == "NOR2") return "#c63";
+        if (cell == "XOR2" || cell == "XOR3") return "#c3c";
+        if (cell == "INV" || cell == "BUF") return "#3cc";
+        return "#36c";
+    };
+
+    // --- primary I/O (nets without driver = input, without consumer = output) ---
+    std::set<std::string> driven;
+    std::set<std::string> consumed;
+    for (size_t i = 0; i < ir.insts.size(); ++i) {
+        driven.insert(ir.insts[i].output);
+        for (size_t k = 0; k < ir.insts[i].inputs.size(); ++k)
+            consumed.insert(ir.insts[i].inputs[k]);
+    }
+    std::vector<std::string> in_ports, out_ports;
+    for (size_t i = 0; i < ir.nets.size(); ++i) {
+        const std::string &n = ir.nets[i].name;
+        if (n == "clock" || n == "clk") continue;
+        if (consumed.find(n) == consumed.end() && driven.find(n) != driven.end())
+            out_ports.push_back(n);
+        else if (driven.find(n) == driven.end() &&
+                 consumed.find(n) != consumed.end())
+            in_ports.push_back(n);
+    }
+    std::vector<std::string> all_ports;
+    all_ports.insert(all_ports.end(), in_ports.begin(), in_ports.end());
+    all_ports.insert(all_ports.end(), out_ports.begin(), out_ports.end());
+
+    // --- SVG header ---
     snprintf(b, sizeof(b),
              "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 %lld "
              "%lld\"><title>",
              (long long)fp.die_w, (long long)fp.die_h);
     o += b;
     json_escape(o, design);
-    o += "</title>\n<rect x=\"0\" y=\"0\" width=\"" +
-         std::to_string(fp.die_w) + "\" height=\"" +
-         std::to_string(fp.die_h) +
-         "\" fill=\"#111\" stroke=\"#888\"/>\n<rect x=\"" +
-         std::to_string(fp.core_x) + "\" y=\"" + std::to_string(fp.core_y) +
-         "\" width=\"" + std::to_string(fp.core_w) + "\" height=\"" +
-         std::to_string(fp.core_h) +
-         "\" fill=\"#1c2b1c\" stroke=\"#4c4\"/>\n";
-    for (size_t i = 0; i < rr.segs.size(); ++i) {
-        const RouteSeg &s = rr.segs[i];
+    o += "</title>\n";
+
+    // --- defs: dot-grid pattern ---
+    o += "<defs>\n"
+         "  <pattern id=\"grid\" width=\"10\" height=\"10\" "
+         "patternUnits=\"userSpaceOnUse\">\n"
+         "    <circle cx=\"5\" cy=\"5\" r=\"0.4\" fill=\"#222\"/>\n"
+         "  </pattern>\n"
+         "</defs>\n";
+
+    // --- layer 1: substrate ---
+    snprintf(b, sizeof(b),
+             "<rect x=\"0\" y=\"0\" width=\"%lld\" height=\"%lld\" "
+             "fill=\"#0a0a0a\"/>\n",
+             (long long)fp.die_w, (long long)fp.die_h);
+    o += b;
+    snprintf(b, sizeof(b),
+             "<rect x=\"0\" y=\"0\" width=\"%lld\" height=\"%lld\" "
+             "fill=\"url(#grid)\"/>\n",
+             (long long)fp.die_w, (long long)fp.die_h);
+    o += b;
+
+    // --- layer 2: core fill ---
+    snprintf(b, sizeof(b),
+             "<rect x=\"%lld\" y=\"%lld\" width=\"%lld\" height=\"%lld\" "
+             "fill=\"#0c1a0c\" stroke=\"#3a3\" stroke-width=\"0.5\"/>\n",
+             (long long)fp.core_x, (long long)fp.core_y,
+             (long long)fp.core_w, (long long)fp.core_h);
+    o += b;
+
+    // --- layer 3: power grid (H=VSS blue, V=VDD red) ---
+    // 12 horizontal VSS stripes
+    for (int i = 0; i < 12; ++i) {
+        int64_t ry = fp.core_y + i * fp.core_h / 11;
         snprintf(b, sizeof(b),
                  "<line x1=\"%lld\" y1=\"%lld\" x2=\"%lld\" y2=\"%lld\" "
-                 "stroke=\"%s\" stroke-width=\"1\"/>\n",
-                 (long long)s.a.x, (long long)s.a.y, (long long)s.b.x,
-                 (long long)s.b.y, s.layer == 1 ? "#c84" : "#48c");
+                 "stroke=\"#22c\" stroke-width=\"1\" opacity=\"0.4\"/>\n",
+                 (long long)fp.core_x, (long long)ry,
+                 (long long)(fp.core_x + fp.core_w), (long long)ry);
         o += b;
     }
-    for (size_t i = 0; i < rr.vias.size(); ++i) {
+    // 12 vertical VDD stripes
+    for (int i = 0; i < 12; ++i) {
+        int64_t vx = fp.core_x + i * fp.core_w / 11;
         snprintf(b, sizeof(b),
-                 "<circle cx=\"%lld\" cy=\"%lld\" r=\"2\" fill=\"#cc4\"/>\n",
-                 (long long)rr.vias[i].at.x, (long long)rr.vias[i].at.y);
+                 "<line x1=\"%lld\" y1=\"%lld\" x2=\"%lld\" y2=\"%lld\" "
+                 "stroke=\"#c22\" stroke-width=\"1\" opacity=\"0.4\"/>\n",
+                 (long long)vx, (long long)fp.core_y,
+                 (long long)vx, (long long)(fp.core_y + fp.core_h));
         o += b;
     }
+
+    // --- layer 4: M1 routing (horizontal, gold) ---
+    for (size_t i = 0; i < rr.segs.size(); ++i) {
+        const RouteSeg &s = rr.segs[i];
+        if (s.layer != 1) continue;
+        snprintf(b, sizeof(b),
+                 "<line x1=\"%lld\" y1=\"%lld\" x2=\"%lld\" y2=\"%lld\" "
+                 "stroke=\"#d93\" stroke-width=\"1.5\" opacity=\"0.7\"/>\n",
+                 (long long)s.a.x, (long long)s.a.y,
+                 (long long)s.b.x, (long long)s.b.y);
+        o += b;
+    }
+
+    // --- layer 5: M2 routing (vertical, blue) ---
+    for (size_t i = 0; i < rr.segs.size(); ++i) {
+        const RouteSeg &s = rr.segs[i];
+        if (s.layer != 2) continue;
+        snprintf(b, sizeof(b),
+                 "<line x1=\"%lld\" y1=\"%lld\" x2=\"%lld\" y2=\"%lld\" "
+                 "stroke=\"#66c\" stroke-width=\"1.5\" opacity=\"0.7\"/>\n",
+                 (long long)s.a.x, (long long)s.a.y,
+                 (long long)s.b.x, (long long)s.b.y);
+        o += b;
+    }
+
+    // --- layer 6: vias (diamonds at M1/M2 transitions) ---
+    for (size_t i = 0; i < rr.vias.size(); ++i) {
+        int64_t vx = rr.vias[i].at.x, vy = rr.vias[i].at.y;
+        snprintf(b, sizeof(b),
+                 "<polygon points=\"%lld,%lld %lld,%lld %lld,%lld %lld,%lld\" "
+                 "fill=\"#ff4\" stroke=\"#aa0\" stroke-width=\"0.3\"/>\n",
+                 (long long)vx, (long long)(vy - 2),
+                 (long long)(vx + 2), (long long)vy,
+                 (long long)vx, (long long)(vy + 2),
+                 (long long)(vx - 2), (long long)vy);
+        o += b;
+    }
+
+    // --- layer 7: placed cells ---
     for (size_t i = 0; i < fp.insts.size(); ++i) {
         const PlacedInst &p = fp.insts[i];
+        const char *col = cell_color(p.cell);
         snprintf(b, sizeof(b),
                  "<rect x=\"%lld\" y=\"%lld\" width=\"%lld\" height=\"%lld\" "
-                 "fill=\"%s\" stroke=\"#000\"/>",
-                 (long long)p.x, (long long)p.y, (long long)p.w,
-                 (long long)p.h, p.cell == "DFF" ? "#484" : "#668");
+                 "fill=\"%s\" stroke=\"#000\" stroke-width=\"0.5\">",
+                 (long long)p.x, (long long)p.y,
+                 (long long)p.w, (long long)p.h, col);
         o += b;
         o += "<title>";
         json_escape(o, p.name + " (" + p.cell + ")");
         o += "</title></rect>\n";
     }
+
+    // --- layer 8: cell labels ---
+    for (size_t i = 0; i < fp.insts.size(); ++i) {
+        const PlacedInst &p = fp.insts[i];
+        if (p.w < 15 || p.h < 10) continue;
+        // Shorten label: strip "top/", then last _ segment, then brackets
+        std::string label = p.name;
+        if (label.size() > 4 && label.substr(0, 4) == "top/")
+            label = label.substr(4);
+        size_t us = label.rfind('_');
+        if (us != std::string::npos && us + 1 < label.size()) {
+            // Keep last _ segment unless it's a number-only suffix after a short prefix
+            std::string tail = label.substr(us + 1);
+            // If the prefix before _ is also short (e.g. "_mux_13"), use tail
+            if (us > 0) label = tail;
+        }
+        // Strip brackets: "cnt[0]" -> "c0", "count[3]" -> "c3"
+        {
+            size_t lb = label.find('[');
+            if (lb != std::string::npos && lb + 1 < label.size()) {
+                std::string base = label.substr(0, lb);
+                size_t rb = label.find(']', lb + 1);
+                std::string idx = (rb != std::string::npos)
+                                      ? label.substr(lb + 1, rb - lb - 1)
+                                      : label.substr(lb + 1);
+                // Abbreviate base to first char + index
+                if (!base.empty()) label = base.substr(0, 1) + idx;
+            }
+        }
+        if (label.empty()) continue;
+        // Truncate if still too long for cell
+        int64_t max_chars = p.w / 6;
+        if (max_chars < 2) max_chars = 2;
+        if ((int64_t)label.size() > max_chars)
+            label = label.substr(0, (size_t)max_chars);
+        // Font-size: fit label within cell width (6px per char at given fs)
+        int64_t fs = (int64_t)(p.w / (label.size() * 0.6));
+        if (fs > 10) fs = 10;
+        if (fs < 3) fs = 3;
+        int64_t tx = p.x + p.w / 2;
+        int64_t ty = p.y + p.h / 2 + fs / 3;
+        snprintf(b, sizeof(b),
+                 "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" "
+                 "font-size=\"%lld\" fill=\"#fff\" text-anchor=\"middle\" "
+                 "pointer-events=\"none\">",
+                 (long long)tx, (long long)ty, (long long)fs);
+        o += b;
+        json_escape(o, label);
+        o += "</text>\n";
+    }
+
+    // --- layer 9: I/O pad ring connections (green, drawn BEFORE pads) ---
+    int64_t pad_w = 8, pad_h = 6;
+    int nports = (int)all_ports.size();
+    int pads_per_side = nports > 0 ? (nports + 3) / 4 : 3;
+    if (pads_per_side < 3) pads_per_side = 3;
+    if (pads_per_side > 16) pads_per_side = 16;
+    // Compute pad center for each port index + side
+    auto pad_center = [&](int pi, int side) -> std::pair<int64_t, int64_t> {
+        int i = pi % pads_per_side;
+        int64_t px_base = fp.core_x + (int64_t)(i + 1) * fp.core_w / (pads_per_side + 1);
+        int64_t py_base = fp.core_y + (int64_t)(i + 1) * fp.core_h / (pads_per_side + 1);
+        switch (side) {
+            case 0: return {px_base, 5};
+            case 1: return {px_base, fp.die_h - 5};
+            case 2: return {5, py_base};
+            default: return {fp.die_w - 5, py_base};
+        }
+    };
+    for (int side = 0; side < 4; ++side) {
+        for (int i = 0; i < pads_per_side; ++i) {
+            int pi = i + pads_per_side * side;
+            if (pi >= nports) break;
+            auto [pad_cx, pad_cy] = pad_center(pi, side);
+            const std::string &port = all_ports[(size_t)pi];
+            int64_t cell_cx = -1, cell_cy = -1;
+            for (size_t j = 0; j < ir.insts.size() && cell_cx < 0; ++j) {
+                if (ir.insts[j].output == port && j < fp.insts.size()) {
+                    cell_cx = fp.insts[j].x + fp.insts[j].w / 2;
+                    cell_cy = fp.insts[j].y + fp.insts[j].h / 2;
+                }
+            }
+            for (size_t j = 0; j < ir.insts.size() && cell_cx < 0; ++j) {
+                for (size_t k = 0; k < ir.insts[j].inputs.size(); ++k) {
+                    if (ir.insts[j].inputs[k] == port && j < fp.insts.size()) {
+                        cell_cx = fp.insts[j].x + fp.insts[j].w / 2;
+                        cell_cy = fp.insts[j].y + fp.insts[j].h / 2;
+                        break;
+                    }
+                }
+            }
+            if (cell_cx < 0) continue;
+            // 2-segment L-route: pad → cell (no edge jog)
+            auto io_route = [&](int64_t x1, int64_t y1, int64_t x2, int64_t y2) {
+                if (x1 != x2 || y1 != y2)
+                    snprintf(b, sizeof(b),
+                             "<line x1=\"%lld\" y1=\"%lld\" x2=\"%lld\" y2=\"%lld\" "
+                             "stroke=\"#4a4\" stroke-width=\"0.8\" opacity=\"0.6\"/>\n",
+                             (long long)x1, (long long)y1, (long long)x2, (long long)y2);
+                o += b;
+            };
+            if (side == 0 || side == 1) {
+                io_route(pad_cx, pad_cy, pad_cx, cell_cy);
+                io_route(pad_cx, cell_cy, cell_cx, cell_cy);
+            } else {
+                io_route(pad_cx, pad_cy, cell_cx, pad_cy);
+                io_route(cell_cx, pad_cy, cell_cx, cell_cy);
+            }
+        }
+    }
+
+    // --- layer 10: bond pads (signal + power) ---
+    auto pad_label = [](const std::string &name) -> std::string {
+        if (name.size() <= 5) return name;
+        size_t lb = name.find('[');
+        if (lb != std::string::npos && lb + 1 < name.size()) {
+            std::string base = name.substr(0, lb);
+            size_t rb = name.find(']', lb + 1);
+            std::string idx = (rb != std::string::npos)
+                                  ? name.substr(lb + 1, rb - lb - 1)
+                                  : name.substr(lb + 1);
+            if (!base.empty()) return base.substr(0, 1) + idx;
+        }
+        return name.substr(0, 5);
+    };
+    auto emit_pad = [&](int64_t px, int64_t py, int64_t pw, int64_t ph,
+                        const char *fill, const char *label, int rot) {
+        snprintf(b, sizeof(b),
+                 "<rect x=\"%lld\" y=\"%lld\" width=\"%lld\" height=\"%lld\" "
+                 "fill=\"%s\" stroke=\"#642\" stroke-width=\"0.5\"/>",
+                 (long long)px, (long long)py, (long long)pw, (long long)ph, fill);
+        o += b;
+        if (label[0]) {
+            if (rot == 0) {
+                snprintf(b, sizeof(b),
+                         "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" "
+                         "font-size=\"3\" fill=\"#ccc\" text-anchor=\"middle\" "
+                         "pointer-events=\"none\">",
+                         (long long)(px + pw / 2), (long long)(py + ph + 4));
+                o += b;
+            } else if (rot == 180) {
+                snprintf(b, sizeof(b),
+                         "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" "
+                         "font-size=\"3\" fill=\"#ccc\" text-anchor=\"middle\" "
+                         "pointer-events=\"none\">",
+                         (long long)(px + pw / 2), (long long)(py - 2));
+                o += b;
+            } else if (rot == -90) {
+                snprintf(b, sizeof(b),
+                         "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" "
+                         "font-size=\"3\" fill=\"#ccc\" text-anchor=\"middle\" "
+                         "pointer-events=\"none\" "
+                         "transform=\"rotate(-90,%lld,%lld)\">",
+                         (long long)(px + ph + 4), (long long)(py + pw / 2),
+                         (long long)(px + ph + 4), (long long)(py + pw / 2));
+                o += b;
+            } else {
+                snprintf(b, sizeof(b),
+                         "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" "
+                         "font-size=\"3\" fill=\"#ccc\" text-anchor=\"middle\" "
+                         "pointer-events=\"none\" "
+                         "transform=\"rotate(90,%lld,%lld)\">",
+                         (long long)(px - 4), (long long)(py + pw / 2),
+                         (long long)(px - 4), (long long)(py + pw / 2));
+                o += b;
+            }
+            json_escape(o, label);
+            o += "</text>\n";
+        } else {
+            o += "\n";
+        }
+    };
+    // Signal pads — top
+    for (int i = 0; i < pads_per_side; ++i) {
+        int64_t px = fp.core_x + (int64_t)(i + 1) * fp.core_w / (pads_per_side + 1) - pad_w / 2;
+        std::string tmp; if (i < nports) tmp = pad_label(all_ports[(size_t)i]);
+        emit_pad(px, 2, pad_w, pad_h, "#b86", i < nports ? tmp.c_str() : "", 0);
+    }
+    // Signal pads — bottom
+    for (int i = 0; i < pads_per_side; ++i) {
+        int64_t px = fp.core_x + (int64_t)(i + 1) * fp.core_w / (pads_per_side + 1) - pad_w / 2;
+        int64_t py = fp.die_h - 2 - pad_h;
+        int pi = i + pads_per_side;
+        std::string tmp; if (pi < nports) tmp = pad_label(all_ports[(size_t)pi]);
+        emit_pad(px, py, pad_w, pad_h, "#b86", pi < nports ? tmp.c_str() : "", 180);
+    }
+    // Signal pads — left
+    for (int i = 0; i < pads_per_side; ++i) {
+        int64_t py = fp.core_y + (int64_t)(i + 1) * fp.core_h / (pads_per_side + 1) - pad_h / 2;
+        int pi = i + pads_per_side * 2;
+        std::string tmp; if (pi < nports) tmp = pad_label(all_ports[(size_t)pi]);
+        emit_pad(2, py, pad_h, pad_w, "#b86", pi < nports ? tmp.c_str() : "", -90);
+    }
+    // Signal pads — right
+    for (int i = 0; i < pads_per_side; ++i) {
+        int64_t px = fp.die_w - 2 - pad_h;
+        int64_t py = fp.core_y + (int64_t)(i + 1) * fp.core_h / (pads_per_side + 1) - pad_w / 2;
+        int pi = i + pads_per_side * 3;
+        if (pi >= nports) break;
+        std::string tmp = pad_label(all_ports[(size_t)pi]);
+        emit_pad(px, py, pad_h, pad_w, "#b86", tmp.c_str(), 90);
+    }
+    // Power pads — 2 VDD (red) + 2 VSS (blue) at die corners
+    emit_pad(2, 2, pad_w, pad_h, "#c44", "VDD", 0);
+    emit_pad(fp.die_w - 2 - pad_w, 2, pad_w, pad_h, "#c44", "VDD", 0);
+    emit_pad(2, fp.die_h - 2 - pad_h, pad_w, pad_h, "#44c", "VSS", 180);
+    emit_pad(fp.die_w - 2 - pad_w, fp.die_h - 2 - pad_h, pad_w, pad_h, "#44c", "VSS", 180);
+    emit_pad(2, fp.core_y + fp.core_h / 2 - pad_h / 2, pad_h, pad_w, "#c44", "VDD", -90);
+    emit_pad(fp.die_w - 2 - pad_h, fp.core_y + fp.core_h / 4 - pad_w / 2, pad_h, pad_w, "#44c", "VSS", 90);
+    emit_pad(2, fp.core_y + fp.core_h * 3 / 4 - pad_w / 2, pad_h, pad_w, "#44c", "VSS", -90);
+    emit_pad(fp.die_w - 2 - pad_h, fp.core_y + fp.core_h / 2 - pad_h / 2, pad_h, pad_w, "#c44", "VDD", 90);
+
+    // --- layer 10: title + legend ---
+    snprintf(b, sizeof(b),
+             "<text x=\"%lld\" y=\"12\" font-family=\"monospace\" "
+             "font-size=\"5\" fill=\"#aaa\" pointer-events=\"none\">",
+             (long long)(fp.core_x + 2));
+    o += b;
+    json_escape(o, design);
+    o += "</text>\n";
+    // Legend
+    int64_t lx = fp.die_w - 50, ly = fp.die_h - 14;
+    snprintf(b, sizeof(b),
+             "<rect x=\"%lld\" y=\"%lld\" width=\"4\" height=\"3\" fill=\"#d93\"/>\n"
+             "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" font-size=\"3\" "
+             "fill=\"#aaa\" pointer-events=\"none\">M1</text>\n"
+             "<rect x=\"%lld\" y=\"%lld\" width=\"4\" height=\"3\" fill=\"#66c\"/>\n"
+             "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" font-size=\"3\" "
+             "fill=\"#aaa\" pointer-events=\"none\">M2</text>\n"
+             "<rect x=\"%lld\" y=\"%lld\" width=\"4\" height=\"3\" fill=\"#4a4\"/>\n"
+             "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" font-size=\"3\" "
+             "fill=\"#aaa\" pointer-events=\"none\">I/O</text>\n"
+             "<rect x=\"%lld\" y=\"%lld\" width=\"4\" height=\"3\" fill=\"#c44\"/>\n"
+             "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" font-size=\"3\" "
+             "fill=\"#aaa\" pointer-events=\"none\">VDD</text>\n"
+             "<rect x=\"%lld\" y=\"%lld\" width=\"4\" height=\"3\" fill=\"#44c\"/>\n"
+             "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" font-size=\"3\" "
+             "fill=\"#aaa\" pointer-events=\"none\">VSS</text>\n",
+             (long long)lx, (long long)ly,
+             (long long)(lx + 5), (long long)(ly + 3),
+             (long long)lx, (long long)(ly + 5),
+             (long long)(lx + 5), (long long)(ly + 8),
+             (long long)lx, (long long)(ly + 10),
+             (long long)(lx + 5), (long long)(ly + 13),
+             (long long)lx, (long long)(ly + 15),
+             (long long)(lx + 5), (long long)(ly + 18),
+             (long long)lx, (long long)(ly + 20),
+             (long long)(lx + 5), (long long)(ly + 23));
+    o += b;
+
+    // --- die outline ---
+    snprintf(b, sizeof(b),
+             "<rect x=\"0\" y=\"0\" width=\"%lld\" height=\"%lld\" "
+             "fill=\"none\" stroke=\"#888\" stroke-width=\"1\"/>\n",
+             (long long)fp.die_w, (long long)fp.die_h);
+    o += b;
+
     o += "</svg>\n";
     return o;
 }

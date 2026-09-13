@@ -120,8 +120,8 @@ std::string layout_export_json(const std::string &design, const DesignIR &ir,
 // Validates `vfpga-physical-layout` v1; friendly error otherwise.
 bool layout_import_check(const std::string &json, std::string &design_out,
                          std::string &err);
-std::string layout_export_svg(const std::string &design, const Floorplan &fp,
-                              const RouteResult &rr);
+std::string layout_export_svg(const std::string &design, const DesignIR &ir,
+                              const Floorplan &fp, const RouteResult &rr);
 
 // RISC-V block map: maps opcode ranges to functional block names.
 // Used to overlay labeled regions on the floorplan when the design

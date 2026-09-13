@@ -302,7 +302,7 @@ int cmd_physical(const char *sub, const char *design_path, int argc,
     if (want_svg) {
         if (svg.empty())
             svg = std::string("build/physical/") + d.base + ".svg";
-        std::string pic = layout_export_svg(d.base, fp, rr);
+        std::string pic = layout_export_svg(d.base, ir, fp, rr);
         FILE *g = fopen(svg.c_str(), "wb");
         if (g) {
             fwrite(pic.data(), 1, pic.size(), g);
