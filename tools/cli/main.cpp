@@ -297,8 +297,9 @@ int cmd_physical(const char *sub, const char *design_path, int argc,
     }
     fwrite(js.data(), 1, js.size(), f);
     fclose(f);
+    bool want_svg = has_flag(argc, argv, "--svg") || has_flag(argc, argv, "--open");
     std::string svg = flag_value(argc, argv, "--svg", "");
-    if (!svg.empty() || has_flag(argc, argv, "--open")) {
+    if (want_svg) {
         if (svg.empty())
             svg = std::string("build/physical/") + d.base + ".svg";
         std::string pic = layout_export_svg(d.base, fp, rr);
