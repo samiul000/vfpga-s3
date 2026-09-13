@@ -174,6 +174,55 @@ int main() {
         CHECK(same, "placement deterministic by seed");
     }
 
+    // ALU: nested if/else with 16-bit registers
+    {
+        std::string src;
+        {
+            FILE *f = fopen("examples/physical/alu.v", "r");
+            if (f) {
+                fseek(f, 0, SEEK_END);
+                long sz = ftell(f);
+                fseek(f, 0, SEEK_SET);
+                src.resize(static_cast<size_t>(sz));
+                fread(&src[0], 1, static_cast<size_t>(sz), f);
+                fclose(f);
+            }
+        }
+        CHECK(!src.empty(), "alu.v loaded");
+
+        Netlist nl;
+        MappedConfig cfg;
+        compile_src(src, nl, cfg);
+
+        // Count MUX instances (nested if/else) — MUX2 cells come from
+        // the IF→MUX expansion in the netlist builder.
+        int mux_count = 0;
+        for (size_t i = 0; i < cfg.luts.size(); ++i) {
+            if (cfg.luts[i].truth_table == 0x00CA) ++mux_count;
+        }
+        CHECK(mux_count == 64, "alu has 64 MUX (4 IF levels × 16 bits)");
+
+        DesignIR ir;
+        std::string err;
+        build_ir(nl, cfg, ir, err);
+        CHECK(!ir.insts.empty(), "alu IR built");
+
+        PlaceOptions po;
+        po.seed = 42;
+        Floorplan fp;
+        floorplan_place(ir, po, fp, err);
+        CHECK(fp.insts.size() == ir.insts.size(), "alu floorplan sized");
+
+        RouteResult rr = route(ir, fp);
+        CHECK(rr.unrouted == 0, "alu fully routed");
+
+        TimingResult tr = estimate_timing(ir, fp);
+        CHECK(tr.crit_ps > 0, "alu timing analyzed");
+
+        CHECK(layout_export_svg("alu", ir, fp, rr).find("<svg") == 0,
+              "alu SVG export");
+    }
+
     // RISC-V block map
     {
         std::vector<RiscvBlock> bm = riscv_block_map();

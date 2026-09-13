@@ -207,6 +207,9 @@ AstNode Parser::parse_if() {
     if (cond.type == AstNode::Type::EXPR_NOT && !cond.children.empty()) {
         node.children.push_back(cond.children[0]);
         node.op = "!";
+    } else if (cond.type == AstNode::Type::EXPR_BINARY) {
+        node.children = cond.children;
+        node.op = cond.op;
     } else {
         node.children.push_back(cond.name);
         node.op = cond.op;

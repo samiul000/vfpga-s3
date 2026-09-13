@@ -209,6 +209,7 @@ build/vfpga report examples/physical/mux.v
 <td align="center"><img src="assets/and.svg" width="60%" alt="AND gate layout"><br><sub>AND gate (1 cell)</sub></td>
 <td align="center"><img src="assets/counter.svg" width="60%" alt="Counter layout"><br><sub>4-bit counter (25 cells)</sub></td>
 <td align="center"><img src="assets/mux.svg" width="60%" alt="MUX layout"><br><sub>MUX with register (6 cells)</sub></td>
+<td align="center"><img src="assets/alu.svg" width="60%" alt="ALU layout"><br><sub>16-bit ALU (129 cells)</sub></td>
 </tr>
 </table>
 

@@ -57,6 +57,25 @@ Token Lexer::next_token(const std::string &source, size_t &pos, size_t &line) {
     if (isdigit(c)) {
         std::string num;
         while (pos < source.size() && isdigit(source[pos])) num += source[pos++];
+        // Handle Verilog-style sized literals: 16'd0, 4'b0000, 8'hFF
+        if (pos < source.size() && source[pos] == '\'' && pos + 1 < source.size()) {
+            char fmt = source[pos + 1];
+            if (fmt == 'h' || fmt == 'H' || fmt == 'b' || fmt == 'B' ||
+                fmt == 'd' || fmt == 'D') {
+                pos += 2;
+                std::string val;
+                while (pos < source.size() && isalnum(source[pos])) val += source[pos++];
+                if (fmt == 'h' || fmt == 'H') {
+                    return {TokenType::HEX_NUMBER, val, line};
+                } else if (fmt == 'b' || fmt == 'B') {
+                    uint32_t n = 0;
+                    for (char bit : val) n = (n << 1) | (bit == '1' ? 1 : 0);
+                    return {TokenType::NUMBER, std::to_string(n), line};
+                } else {
+                    return {TokenType::NUMBER, val, line};
+                }
+            }
+        }
         return {TokenType::NUMBER, num, line};
     }
 
@@ -79,7 +98,7 @@ Token Lexer::next_token(const std::string &source, size_t &pos, size_t &line) {
         if (id == "else") return {TokenType::KW_ELSE, id, line};
         if (id == "if") return {TokenType::KW_IF, id, line};
 
-        if (id.size() > 2 && id[0] == '8' && id[1] == '\'') {
+        if (id.size() > 2 && id[0] >= '0' && id[0] <= '9' && id[1] == '\'') {
             char fmt = id[2];
             std::string val = id.substr(3);
             if (fmt == 'h' || fmt == 'H') {

@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cctype>
+#include <functional>
 #include <string>
 
 void Netlist::add_net(const std::string &name) {
@@ -361,179 +362,22 @@ void Netlist::build_from_ast(const std::vector<AstNode> &ast) {
                     components_.push_back(ff_comp);
 
                 } else if (sub.type == AstNode::Type::IF) {
-                    // if/else: create condition LUT + branch LUTs + MUX
-                    // For simplicity, handle the common pattern:
-                    // if (cond) begin reg <= val_a; end else begin reg <= val_b; end
-                    // Create: cond_LUT, val_a_LUT, val_b_LUT, MUX_LUT, FF
-
-                    // Condition LUT (NOT if op is "!")
-                    uint16_t cond_out = ensure_net("_cond_" + std::to_string(components_.size()));
-                    NetlistComponent cond_comp;
-                    cond_comp.type = NetlistComponent::Type::LUT4;
-                    cond_comp.id = static_cast<uint16_t>(components_.size());
-                    cond_comp.op = sub.op.empty() ? "PASS" : sub.op;
-                    cond_comp.output = cond_out;
-                    for (const auto &child : sub.children) {
-                        int16_t child_id = resolve(child);
-                        if (child_id < 0) { ensure_net(child); child_id = resolve(child); }
-                        if (child_id >= 0) cond_comp.inputs.push_back(static_cast<uint16_t>(child_id));
-                    }
-                    components_.push_back(cond_comp);
-
-                    // Process then/else blocks
+                    // Find the target register name in the then branch.
+                    std::string target_reg;
                     if (sub.sub_nodes.size() >= 1) {
-                        const AstNode &then_block = sub.sub_nodes[0];
-                        // Find assignments in then block (could be BEGIN_END or direct ASSIGN_LE)
-                        std::vector<const AstNode*> then_assigns;
-                        if (then_block.type == AstNode::Type::BEGIN_END) {
-                            for (const auto &s : then_block.sub_nodes)
-                                if (s.type == AstNode::Type::ASSIGN_LE) then_assigns.push_back(&s);
-                        } else if (then_block.type == AstNode::Type::ASSIGN_LE) {
-                            then_assigns.push_back(&then_block);
-                        }
-
-                        std::vector<const AstNode*> else_assigns;
-                        if (sub.sub_nodes.size() >= 2) {
-                            const AstNode &else_block = sub.sub_nodes[1];
-                            if (else_block.type == AstNode::Type::BEGIN_END) {
-                                for (const auto &s : else_block.sub_nodes)
-                                    if (s.type == AstNode::Type::ASSIGN_LE) else_assigns.push_back(&s);
-                            } else if (else_block.type == AstNode::Type::ASSIGN_LE) {
-                                else_assigns.push_back(&else_block);
-                            }
-                        }
-
-                        // For each assigned register, create branch LUTs + MUX + FF
-                        for (size_t ai = 0; ai < then_assigns.size(); ++ai) {
-                            const AstNode *then_a = then_assigns[ai];
-                            int16_t reg_id = resolve(then_a->name);
-                            if (reg_id < 0) continue;
-
-                            // Per-bit expansion for buses: shared scalar cond,
-                            // per-bit then/else/MUX/FF. Ops outside the bitwise
-                            // set ("==", "!=") keep the legacy whole-name path.
-                            const AstNode *else_a = (ai < else_assigns.size())
-                                ? else_assigns[ai] : nullptr;
-                            std::string else_op = else_a ? else_a->op : "PASS";
-                            auto bitwise_ok = [](const std::string &op) {
-                                return op.empty() || op == "PASS" || op == "&" ||
-                                       op == "|" || op == "^" || op == "+";
-                            };
-                            int32_t iw = bus_width(then_a->name);
-                            if (iw > 1 && bitwise_ok(then_a->op) && bitwise_ok(else_op)) {
-                                std::vector<uint16_t> then_v = branch_values(
-                                    then_a->op, then_a->children, iw,
-                                    "_then_" + std::to_string(reg_id));
-                                std::vector<uint16_t> else_v;
-                                if (else_a) {
-                                    else_v = branch_values(
-                                        else_a->op, else_a->children, iw,
-                                        "_else_" + std::to_string(reg_id));
-                                } else {
-                                    for (int32_t b = 0; b < iw; ++b) {
-                                        else_v.push_back(
-                                            ensure_bus_net(then_a->name, b));
-                                    }
+                        const AstNode &tb = sub.sub_nodes[0];
+                        if (tb.type == AstNode::Type::BEGIN_END) {
+                            for (const auto &s : tb.sub_nodes) {
+                                if (s.type == AstNode::Type::ASSIGN_LE) {
+                                    target_reg = s.name; break;
                                 }
-                                uint16_t gnd_net = ensure_net("GND");
-                                for (int32_t b = 0; b < iw; ++b) {
-                                    uint16_t regbit =
-                                        ensure_bus_net(then_a->name, b);
-                                    uint16_t mux_out = ensure_net(
-                                        "_mux_" + std::to_string(regbit));
-                                    NetlistComponent mux_comp;
-                                    mux_comp.type = NetlistComponent::Type::LUT4;
-                                    mux_comp.id = static_cast<uint16_t>(
-                                        components_.size());
-                                    mux_comp.op = "MUX";
-                                    mux_comp.output = mux_out;
-                                    mux_comp.inputs.push_back(else_v[b]);
-                                    mux_comp.inputs.push_back(then_v[b]);
-                                    mux_comp.inputs.push_back(cond_out);
-                                    mux_comp.inputs.push_back(gnd_net);
-                                    components_.push_back(mux_comp);
-
-                                    NetlistComponent ff_comp;
-                                    ff_comp.type = NetlistComponent::Type::FF;
-                                    ff_comp.id = static_cast<uint16_t>(
-                                        components_.size());
-                                    ff_comp.op = "DFF";
-                                    ff_comp.inputs.push_back(mux_out);
-                                    ff_comp.output = regbit;
-                                    components_.push_back(ff_comp);
-                                }
-                                continue;
                             }
-
-                            // Then-value LUT
-                            uint16_t then_out = ensure_net("_then_" + std::to_string(reg_id));
-                            NetlistComponent then_comp;
-                            then_comp.type = NetlistComponent::Type::LUT4;
-                            then_comp.id = static_cast<uint16_t>(components_.size());
-                            then_comp.op = then_a->op.empty() ? "PASS" : then_a->op;
-                            then_comp.output = then_out;
-                            for (const auto &child : then_a->children) {
-                                int16_t child_id = resolve(child);
-                                if (child_id < 0) { ensure_net(child); child_id = resolve(child); }
-                                if (child_id >= 0) then_comp.inputs.push_back(static_cast<uint16_t>(child_id));
-                            }
-                            if (then_comp.inputs.empty()) {
-                                uint16_t c = ensure_net(then_a->name + "_then_const");
-                                then_comp.inputs.push_back(c);
-                            }
-                            components_.push_back(then_comp);
-
-                            // Else-value LUT
-                            uint16_t else_out = ensure_net("_else_" + std::to_string(reg_id));
-                            NetlistComponent else_comp;
-                            else_comp.type = NetlistComponent::Type::LUT4;
-                            else_comp.id = static_cast<uint16_t>(components_.size());
-                            if (ai < else_assigns.size()) {
-                                const AstNode *else_a = else_assigns[ai];
-                                else_comp.op = else_a->op.empty() ? "PASS" : else_a->op;
-                                for (const auto &child : else_a->children) {
-                                    int16_t child_id = resolve(child);
-                                    if (child_id < 0) { ensure_net(child); child_id = resolve(child); }
-                                    if (child_id >= 0) else_comp.inputs.push_back(static_cast<uint16_t>(child_id));
-                                }
-                                if (else_comp.inputs.empty()) {
-                                    uint16_t c = ensure_net(else_a->name + "_else_const");
-                                    else_comp.inputs.push_back(c);
-                                }
-                            } else {
-                                else_comp.op = "PASS";
-                                else_comp.inputs.push_back(static_cast<uint16_t>(reg_id));
-                            }
-                            else_comp.output = else_out;
-                            components_.push_back(else_comp);
-
-                            // MUX LUT: cond ? then_val : else_val
-                            // Truth table 0x00CA: a(bit0)=else, b(bit1)=then, c(bit2)=cond
-                            // c=0 -> a(else), c=1 -> b(then)
-                            // 4th input (d) must be tied to GND to avoid clock leaking in
-                            uint16_t mux_out = ensure_net("_mux_" + std::to_string(reg_id));
-                            uint16_t gnd_net = ensure_net("GND");
-                            NetlistComponent mux_comp;
-                            mux_comp.type = NetlistComponent::Type::LUT4;
-                            mux_comp.id = static_cast<uint16_t>(components_.size());
-                            mux_comp.op = "MUX";
-                            mux_comp.output = mux_out;
-                            mux_comp.inputs.push_back(else_out);
-                            mux_comp.inputs.push_back(then_out);
-                            mux_comp.inputs.push_back(cond_out);
-                            mux_comp.inputs.push_back(gnd_net);
-                            components_.push_back(mux_comp);
-
-                            // FF: D = mux_out, Q = reg
-                            NetlistComponent ff_comp;
-                            ff_comp.type = NetlistComponent::Type::FF;
-                            ff_comp.id = static_cast<uint16_t>(components_.size());
-                            ff_comp.op = "DFF";
-                            ff_comp.inputs.push_back(mux_out);
-                            ff_comp.output = static_cast<uint16_t>(reg_id);
-                            components_.push_back(ff_comp);
+                        } else if (tb.type == AstNode::Type::ASSIGN_LE) {
+                            target_reg = tb.name;
                         }
                     }
+                    if (!target_reg.empty())
+                        build_if_chain(sub, target_reg);
                 }
             }
         }
@@ -552,5 +396,133 @@ void Netlist::build_from_ast(const std::vector<AstNode> &ast) {
                 components_.push_back(comp);
             }
         }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// build_if_chain  –  recursive if/else → MUX + per-bit FF
+//
+// Processes an arbitrary if/else-if/else chain for `reg_name`.  Nested IFs
+// in else blocks are handled by recursion — the inner call returns per-bit
+// MUX output nets that become the else-values for the outer MUX.  FFs are
+// created only at the outermost call.
+// ---------------------------------------------------------------------------
+void Netlist::build_if_chain(const AstNode &ifnode, const std::string &reg_name) {
+    int32_t width = bus_width(reg_name);
+    if (width <= 0) width = 1;
+    uint16_t gnd = ensure_net("GND");
+
+    // Recursive MUX-tree builder.  Returns per-bit mux-output nets.
+    // Does NOT create FFs — the outermost caller handles that.
+    std::function<std::vector<uint16_t>(const AstNode&)> tree;
+    tree = [&](const AstNode &n) -> std::vector<uint16_t> {
+        // --- condition LUT (scalar, shared across all bits) ---
+        std::string cop = n.op.empty() ? "PASS" : n.op;
+        if ((cop == "==" || cop == "!=") && n.children.size() == 2) {
+            int32_t lit = decimal_value(n.children[1]);
+            if (lit >= 0) {
+                bool invert = (cop == "==") ? (lit == 0) : (lit == 1);
+                cop = invert ? "!" : "PASS";
+            }
+        }
+        uint16_t cond = ensure_net("_cond_" + std::to_string(components_.size()));
+        {
+            NetlistComponent c;
+            c.type  = NetlistComponent::Type::LUT4;
+            c.id    = static_cast<uint16_t>(components_.size());
+            c.op    = cop;
+            c.output = cond;
+            for (const auto &ch : n.children) {
+                int16_t cid = resolve(ch);
+                if (cid < 0) { ensure_net(ch); cid = resolve(ch); }
+                if (cid >= 0) c.inputs.push_back(static_cast<uint16_t>(cid));
+            }
+            components_.push_back(c);
+        }
+
+        // --- helper: per-bit values from a branch node ---
+        auto branch_vals = [&](const AstNode *bn) -> std::vector<uint16_t> {
+            if (!bn) {
+                std::vector<uint16_t> v(width);
+                for (int32_t b = 0; b < width; ++b)
+                    v[b] = ensure_bus_net(reg_name, b);
+                return v;
+            }
+            if (bn->type == AstNode::Type::IF) return tree(*bn);
+
+            const AstNode *asn = nullptr;
+            if (bn->type == AstNode::Type::BEGIN_END) {
+                for (const auto &s : bn->sub_nodes) {
+                    if (s.type == AstNode::Type::ASSIGN_LE && s.name == reg_name) {
+                        asn = &s; break;
+                    }
+                    if (s.type == AstNode::Type::IF) return tree(s);
+                }
+            } else if (bn->type == AstNode::Type::ASSIGN_LE) {
+                asn = bn;
+            }
+
+            if (asn) {
+                if (width > 1)
+                    return branch_values(asn->op, asn->children, width,
+                        "_tv_" + reg_name + "_" +
+                        std::to_string(components_.size()));
+                std::vector<uint16_t> v(1);
+                v[0] = ensure_net("_tv_" + reg_name + "_" +
+                                  std::to_string(components_.size()));
+                NetlistComponent c;
+                c.type   = NetlistComponent::Type::LUT4;
+                c.id     = static_cast<uint16_t>(components_.size());
+                c.op     = asn->op.empty() ? "PASS" : asn->op;
+                c.output = v[0];
+                for (const auto &ch : asn->children) {
+                    int16_t cid = resolve(ch);
+                    if (cid < 0) { ensure_net(ch); cid = resolve(ch); }
+                    if (cid >= 0) c.inputs.push_back(static_cast<uint16_t>(cid));
+                }
+                if (c.inputs.empty())
+                    c.inputs.push_back(ensure_net(asn->name + "_tv_const"));
+                components_.push_back(c);
+                return v;
+            }
+
+            std::vector<uint16_t> v(width);
+            for (int32_t b = 0; b < width; ++b)
+                v[b] = ensure_bus_net(reg_name, b);
+            return v;
+        };
+
+        std::vector<uint16_t> tv = (n.sub_nodes.size() >= 1)
+            ? branch_vals(&n.sub_nodes[0]) : branch_vals(nullptr);
+        std::vector<uint16_t> ev = (n.sub_nodes.size() >= 2)
+            ? branch_vals(&n.sub_nodes[1]) : branch_vals(nullptr);
+
+        // --- per-bit MUX: cond ? then : else ---
+        std::vector<uint16_t> mx(width);
+        for (int32_t b = 0; b < width; ++b) {
+            mx[b] = ensure_net("_mux_" + std::to_string(components_.size()));
+            NetlistComponent m;
+            m.type   = NetlistComponent::Type::LUT4;
+            m.id     = static_cast<uint16_t>(components_.size());
+            m.op     = "MUX";
+            m.output = mx[b];
+            m.inputs = {ev[b], tv[b], cond, gnd};
+            components_.push_back(m);
+        }
+        return mx;
+    };
+
+    std::vector<uint16_t> mux_outs = tree(ifnode);
+
+    // --- per-bit FFs (outermost call only) ---
+    for (int32_t b = 0; b < width; ++b) {
+        uint16_t rb = ensure_bus_net(reg_name, b);
+        NetlistComponent ff;
+        ff.type   = NetlistComponent::Type::FF;
+        ff.id     = static_cast<uint16_t>(components_.size());
+        ff.op     = "DFF";
+        ff.inputs = {mux_outs[b]};
+        ff.output = rb;
+        components_.push_back(ff);
     }
 }

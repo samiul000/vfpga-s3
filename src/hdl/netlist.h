@@ -52,4 +52,8 @@ private:
     std::vector<uint16_t> branch_values(const std::string &op,
                                         const std::vector<std::string> &children,
                                         int32_t width, const std::string &tag);
+
+    // Process an if/else chain, creating per-bit MUX+FF for `reg_name`.
+    // Handles nested if/else by recursing into else-IF nodes.
+    void build_if_chain(const AstNode &ifnode, const std::string &reg_name);
 };
