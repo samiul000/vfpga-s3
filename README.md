@@ -19,24 +19,24 @@
 
 ## Hardware
 
-| Component | Value |
-|-----------|-------|
-| Board | ESP32-S3-DevKitC-1 N16R8 |
-| SoC | ESP32-S3 rev 2, Xtensa LX7, 2 cores @ 240 MHz |
-| PSRAM | 8 MB (Octal, 80 MHz) |
-| Flash | 16 MB (QIO) |
-| Framework | ESP-IDF 6.0.1 (PlatformIO) |
+| Component | Value                                         |
+| --------- | --------------------------------------------- |
+| Board     | ESP32-S3-DevKitC-1 N16R8                      |
+| SoC       | ESP32-S3 rev 2, Xtensa LX7, 2 cores @ 240 MHz |
+| PSRAM     | 8 MB (Octal, 80 MHz)                          |
+| Flash     | 16 MB (QIO)                                   |
+| Framework | ESP-IDF 6.0.1 (PlatformIO)                    |
 
 ## VFPGA Capacity
 
-| Resource | Count | Memory |
-|----------|-------|--------|
-| LUT4s | 4,096 | 48 KB |
-| Flip-Flops | 4,096 | 48 KB |
-| Signals | 4,096 | 16 KB |
-| BRAM | 3 configurable software BRAM blocks (64/256/1024 x 32-bit) | 96 bytes |
-| DSP | 4 configurable software multiply-accumulate units (INT8/16/32) | — |
-| **Total** | | **~400 KB PSRAM** |
+| Resource   | Count                                                          | Memory            |
+| ---------- | -------------------------------------------------------------- | ----------------- |
+| LUT4s      | 4,096                                                          | 48 KB             |
+| Flip-Flops | 4,096                                                          | 48 KB             |
+| Signals    | 4,096                                                          | 16 KB             |
+| BRAM       | 3 configurable software BRAM blocks (64/256/1024 x 32-bit)     | 96 bytes          |
+| DSP        | 4 configurable software multiply-accumulate units (INT8/16/32) | —                 |
+| **Total**  |                                                                | **~400 KB PSRAM** |
 
 **UP5K-class software-defined FPGA fabric** (4,096 LUT4s, approaching the LUT capacity of the Lattice iCE40 UP5K's 5,280 LUTs; timing, routing, DSP, and memory architectures differ fundamentally from silicon).
 
@@ -44,17 +44,17 @@
 
 ## Performance
 
-| LUT4 Count | Latency | Throughput |
-|------------|---------|------------|
-| 64 | 0.3 us | 2,933 Keval/s |
-| 256 | 1.9 us | 538 Keval/s |
-| 1,024 | 8.5 us | 118 Keval/s |
-| 4,096 | 36.0 us | 28 Keval/s |
+| LUT4 Count | Latency | Throughput    |
+| ---------- | ------- | ------------- |
+| 64         | 0.3 us  | 2,933 Keval/s |
+| 256        | 1.9 us  | 538 Keval/s   |
+| 1,024      | 8.5 us  | 118 Keval/s   |
+| 4,096      | 36.0 us | 28 Keval/s    |
 
-| Resource | Peak |
-|----------|------|
-| DSP (INT32 multiply) | 8.3 Mops/s |
-| BRAM (read/write) | ~5.0 Mops/s |
+| Resource             | Peak        |
+| -------------------- | ----------- |
+| DSP (INT32 multiply) | 8.3 Mops/s  |
+| BRAM (read/write)    | ~5.0 Mops/s |
 
 ![LUT4 Scaling](assets/lut4_scaling.png)
 ![Performance Benchmarks](assets/performance_benchmarks.png)
@@ -190,11 +190,11 @@ build/vfpga verify examples/tutorial/06_counter/design.v \
   --tb examples/tutorial/06_counter/design.tb --wave --open
 ```
 
-## ASIC-Style Physical Design (Educational)
+## ASIC-Style Physical Design
 
 The same HDL also runs through an educational ASIC backend: standard-cell
 mapping → floorplan → placement → routing → layout DB. Abstract units,
-estimated timing, Educational DRC — a teaching model, not foundry-accurate.
+estimated timing, Educational DRC : a teaching model, not foundry-accurate.
 See [PHYSICAL_DESIGN.md](docs/PHYSICAL_DESIGN.md).
 
 ```bash
@@ -206,9 +206,9 @@ build/vfpga report examples/physical/mux.v
 
 <table>
 <tr>
-<td align="center"><img src="assets/and.svg" width="30%" alt="AND gate layout"><br><sub>AND gate (1 cell)</sub></td>
-<td align="center"><img src="assets/counter.svg" width="30%" alt="Counter layout"><br><sub>4-bit counter (25 cells)</sub></td>
-<td align="center"><img src="assets/mux.svg" width="30%" alt="MUX layout"><br><sub>MUX with register (6 cells)</sub></td>
+<td align="center"><img src="assets/and.svg" width="60%" alt="AND gate layout"><br><sub>AND gate (1 cell)</sub></td>
+<td align="center"><img src="assets/counter.svg" width="60%" alt="Counter layout"><br><sub>4-bit counter (25 cells)</sub></td>
+<td align="center"><img src="assets/mux.svg" width="60%" alt="MUX layout"><br><sub>MUX with register (6 cells)</sub></td>
 </tr>
 </table>
 
@@ -280,22 +280,22 @@ Wire an LED (via resistor) to GPIO5 and ground to see it. Demo video/GIF placeho
 
 ![Resources](assets/resources.png)
 
-| Component | Internal RAM | PSRAM |
-|-----------|--------------|-------|
-| VFPGA Core (4K) | 8.4 KB | 400 KB |
-| Free | 328 KB | 7.8 MB |
+| Component       | Internal RAM | PSRAM  |
+| --------------- | ------------ | ------ |
+| VFPGA Core (4K) | 8.4 KB       | 400 KB |
+| Free            | 328 KB       | 7.8 MB |
 
 ---
 
 ## Capacity Context (not a speed comparison)
 
-| FPGA | LUT4s | Clock | Notes |
-|------|-------|-------|-------|
-| **VFPGA-S3** | **4,096** | **28 Keval/s** | Software-defined, no hardware needed |
-| Lattice iCE40 LP384 | 384 | 48 MHz | Physical FPGA |
-| Lattice iCE40 UP5K | 5,280 | 48 MHz | Closest capacity reference |
-| Gowin GW1NR-9 | 8,640 | 24 MHz | Physical FPGA |
-| Xilinx Spartan-7 XC7S25 | 15,000 | 100 MHz | Physical FPGA |
+| FPGA                    | LUT4s     | Clock          | Notes                                |
+| ----------------------- | --------- | -------------- | ------------------------------------ |
+| **VFPGA-S3**            | **4,096** | **28 Keval/s** | Software-defined, no hardware needed |
+| Lattice iCE40 LP384     | 384       | 48 MHz         | Physical FPGA                        |
+| Lattice iCE40 UP5K      | 5,280     | 48 MHz         | Closest capacity reference           |
+| Gowin GW1NR-9           | 8,640     | 24 MHz         | Physical FPGA                        |
+| Xilinx Spartan-7 XC7S25 | 15,000    | 100 MHz        | Physical FPGA                        |
 
 The VFPGA-S3 does not compete with silicon FPGAs on clock speed. Its value proposition is reconfigurability, zero hardware barrier to entry, and software-defined logic on a low-cost microcontroller.
 
@@ -303,19 +303,18 @@ The VFPGA-S3 does not compete with silicon FPGAs on clock speed. Its value propo
 
 ## Documentation
 
-| File | Contents |
-|------|----------|
-| [INSTRUCTION.md](INSTRUCTION.md) | Full project specification and milestones |
-| [AGENTS.md](AGENTS.md) | Environment setup for AI agents (compiler, GTKWave, per-platform) |
-| [HDL_GUIDE.md](docs/HDL_GUIDE.md) | HDL syntax, examples, and pipeline usage |
-| [SIMULATOR.md](docs/SIMULATOR.md) | Host simulator, testbench DSL, VCD/GTKWave workflow (no board needed) |
-| [PHYSICAL_DESIGN.md](docs/PHYSICAL_DESIGN.md) | Educational ASIC backend: cells, floorplan, place, route, layout DB |
-| [RISC-V.md](docs/RISC-V.md) | RV32I instruction set, API, programming examples |
-| [performance.md](docs/performance.md) | Hardware benchmarks and comparison data |
+| File                                          | Contents                                                              |
+| --------------------------------------------- | --------------------------------------------------------------------- |
+| [INSTRUCTION.md](INSTRUCTION.md)              | Full project specification and milestones                             |
+| [AGENTS.md](AGENTS.md)                        | Environment setup for AI agents (compiler, GTKWave, per-platform)     |
+| [HDL_GUIDE.md](docs/HDL_GUIDE.md)             | HDL syntax, examples, and pipeline usage                              |
+| [SIMULATOR.md](docs/SIMULATOR.md)             | Host simulator, testbench DSL, VCD/GTKWave workflow (no board needed) |
+| [PHYSICAL_DESIGN.md](docs/PHYSICAL_DESIGN.md) | Educational ASIC backend: cells, floorplan, place, route, layout DB   |
+| [RISC-V.md](docs/RISC-V.md)                   | RV32I instruction set, API, programming examples                      |
+| [performance.md](docs/performance.md)         | Hardware benchmarks and comparison data                               |
 
 ---
 
 ## Acknowledgements
 
 - **[Ponytail](https://github.com/dietrichgebert/ponytail)** : Code audit and review for ensuring the codebase stays minimal and efficient.
-

@@ -1,4 +1,4 @@
-// Educational ASIC-style physical design engine (host-only).
+// ASIC-style physical design engine (host-only).
 #include "physical_design.h"
 
 #include <cmath>

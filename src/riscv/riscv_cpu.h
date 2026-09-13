@@ -30,7 +30,7 @@ private:
     uint32_t regs_[32]{};
     RiscvMemory mem_;
 
-    // Minimal CSR file (educational). Indices:
+    // Minimal CSR file. Indices:
     //   0 = mstatus (0x300), 1 = mie (0x304), 2 = mscratch (0x340),
     //   3 = mepc (0x341), 4 = mcause (0x342), 5 = mip (0x344).
     static constexpr int kCsrCount = 6;

@@ -1,4 +1,4 @@
-// Educational ASIC-style physical design engine (host-only).
+// ASIC-style physical design engine (host-only).
 // Integer grid units throughout: 1 unit = 0.1 um. Deterministic by seed.
 #pragma once
 
@@ -22,7 +22,7 @@ bool overlaps(Rect a, Rect b);
 bool contains(Rect a, Pt p);
 Rect bbox(Pt a, Pt b);
 
-// Standard-cell library entry (abstract educational units).
+// Standard-cell library entry (abstract units).
 struct CellInfo {
     const char *type;
     int64_t w, h;
@@ -87,7 +87,7 @@ struct Via {
 struct RouteResult {
     std::vector<RouteSeg> segs;
     std::vector<Via> vias;
-    std::vector<std::string> drc;  // Educational DRC violations, if any
+    std::vector<std::string> drc;  // DRC violations, if any
     size_t unrouted = 0;
 };
 RouteResult route(const DesignIR &ir, const Floorplan &fp);

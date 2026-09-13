@@ -117,7 +117,7 @@ void print_fabric_debug(const Design &d, Simulator &sim) {
 }
 
 void print_verbose(const Simulator &sim, const Tracer &tr) {
-    // Educational trace: values grouped by timestamp.
+    // values grouped by timestamp
     uint64_t last = 0;
     bool first = true;
     for (size_t i = 0; i < tr.samples().size(); ++i) {
@@ -165,7 +165,7 @@ void usage() {
     printf("  vfpga build <design>    (full ASIC flow: map..route+reports)\n");
 }
 
-// Educational ASIC flow. Returns 0 ok, 2 compile fail, 4 physical error.
+// Returns 0 ok, 2 compile fail, 4 physical error.
 int cmd_compile(const char *path);  // defined below
 int cmd_physical(const char *sub, const char *design_path, int argc,
                  char **argv) {
@@ -210,7 +210,7 @@ int cmd_physical(const char *sub, const char *design_path, int argc,
         printf("ASIC mapping: %lu cells (%lu sequential)\n",
                (unsigned long)ir.insts.size(), (unsigned long)seq);
         if (cmd == "synth")
-            printf("(educational mapping; use OpenROAD for real synthesis)\n");
+            printf("(Mapping: use OpenROAD for real synthesis)\n");
         return 0;
     }
     PlaceOptions opt;

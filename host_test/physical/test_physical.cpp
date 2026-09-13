@@ -1,4 +1,4 @@
-// Host tests for the educational physical-design engine.
+// Host tests for the physical-design engine.
 #include <cstdio>
 #include <string>
 
