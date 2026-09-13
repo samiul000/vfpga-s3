@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 151 151"><title>mux</title>
+<defs>
+  <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+    <circle cx="5" cy="5" r="0.4" fill="#222"/>
+  </pattern>
+</defs>
+<rect x="0" y="0" width="151" height="151" fill="#0a0a0a"/>
+<rect x="0" y="0" width="151" height="151" fill="url(#grid)"/>
+<rect x="40" y="40" width="71" height="71" fill="#0c1a0c" stroke="#3a3" stroke-width="0.5"/>
+<line x1="40" y1="40" x2="111" y2="40" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="46" x2="111" y2="46" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="52" x2="111" y2="52" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="59" x2="111" y2="59" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="65" x2="111" y2="65" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="72" x2="111" y2="72" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="78" x2="111" y2="78" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="85" x2="111" y2="85" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="91" x2="111" y2="91" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="98" x2="111" y2="98" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="104" x2="111" y2="104" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="111" x2="111" y2="111" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="40" x2="40" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="46" y1="40" x2="46" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="52" y1="40" x2="52" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="59" y1="40" x2="59" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="65" y1="40" x2="65" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="72" y1="40" x2="72" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="78" y1="40" x2="78" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="85" y1="40" x2="85" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="91" y1="40" x2="91" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="98" y1="40" x2="98" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="104" y1="40" x2="104" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="111" y1="40" x2="111" y2="111" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="55" y1="55" x2="95" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="85" y1="55" x2="55" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="75" y1="55" x2="55" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="105" y1="55" x2="55" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="55" x2="55" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="55" x2="55" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="55" x2="55" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="85" x2="55" y2="55" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<polygon points="55,53 57,55 55,57 53,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="55,53 57,55 55,57 53,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="55,53 57,55 55,57 53,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="55,83 57,85 55,87 53,85" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<rect x="90" y="40" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/y (BUF)</title></rect>
+<rect x="80" y="40" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/_cond_1 (BUF)</title></rect>
+<rect x="70" y="40" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/_then_10 (BUF)</title></rect>
+<rect x="100" y="40" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/_else_10 (BUF)</title></rect>
+<rect x="40" y="70" width="30" height="30" fill="#36c" stroke="#000" stroke-width="0.5"><title>top/_mux_10 (MUX2)</title></rect>
+<rect x="40" y="40" width="30" height="30" fill="#2d5" stroke="#000" stroke-width="0.5"><title>top/y_reg (DFF)</title></rect>
+<text x="95" y="58" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">y</text>
+<text x="95" y="69" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="85" y="58" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">1</text>
+<text x="85" y="69" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="75" y="57" font-family="monospace" font-size="8" fill="#fff" text-anchor="middle" pointer-events="none">10</text>
+<text x="75" y="66" font-family="monospace" font-size="4" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="105" y="57" font-family="monospace" font-size="8" fill="#fff" text-anchor="middle" pointer-events="none">10</text>
+<text x="105" y="66" font-family="monospace" font-size="4" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="55" y="88" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">10</text>
+<text x="55" y="99" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">MUX2</text>
+<text x="55" y="58" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">reg</text>
+<text x="55" y="69" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">DFF</text>
+<line x1="57" y1="5" x2="57" y2="55" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="57" y1="55" x2="85" y2="55" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="75" y1="5" x2="75" y2="55" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="75" y1="5" x2="75" y2="55" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="93" y1="5" x2="93" y2="55" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="93" y1="55" x2="105" y2="55" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="57" y1="146" x2="57" y2="85" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="57" y1="85" x2="55" y2="85" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="75" y1="146" x2="75" y2="55" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="75" y1="55" x2="95" y2="55" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<rect x="53" y="2" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="57" y="12" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">sel</text>
+<rect x="71" y="2" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="75" y="12" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">a</text>
+<rect x="89" y="2" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="93" y="12" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">b</text>
+<rect x="53" y="143" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="57" y="141" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">GND</text>
+<rect x="71" y="143" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="75" y="141" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">y</text>
+<rect x="89" y="143" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/>
+<rect x="2" y="54" width="6" height="8" fill="#b86" stroke="#642" stroke-width="0.5"/>
+<rect x="2" y="72" width="6" height="8" fill="#b86" stroke="#642" stroke-width="0.5"/>
+<rect x="2" y="90" width="6" height="8" fill="#b86" stroke="#642" stroke-width="0.5"/>
+<rect x="2" y="2" width="8" height="6" fill="#c44" stroke="#642" stroke-width="0.5"/><text x="6" y="12" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">VDD</text>
+<rect x="141" y="2" width="8" height="6" fill="#c44" stroke="#642" stroke-width="0.5"/><text x="145" y="12" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">VDD</text>
+<rect x="2" y="143" width="8" height="6" fill="#44c" stroke="#642" stroke-width="0.5"/><text x="6" y="141" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">VSS</text>
+<rect x="141" y="143" width="8" height="6" fill="#44c" stroke="#642" stroke-width="0.5"/><text x="145" y="141" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">VSS</text>
+<rect x="2" y="32" width="6" height="8" fill="#c44" stroke="#642" stroke-width="0.5"/><text x="14" y="35" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none" transform="rotate(-90,14,35)">VDD</text>
+<rect x="143" y="32" width="6" height="8" fill="#c44" stroke="#642" stroke-width="0.5"/><text x="139" y="35" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none" transform="rotate(90,139,35)">VDD</text>
+<rect x="2" y="118" width="6" height="8" fill="#44c" stroke="#642" stroke-width="0.5"/><text x="14" y="121" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none" transform="rotate(-90,14,121)">VSS</text>
+<rect x="143" y="118" width="6" height="8" fill="#44c" stroke="#642" stroke-width="0.5"/><text x="139" y="121" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none" transform="rotate(90,139,121)">VSS</text>
+<line x1="6" y1="5" x2="6" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="6" y1="40" x2="40" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="145" y1="5" x2="145" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="145" y1="40" x2="111" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="6" y1="146" x2="40" y2="146" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="40" y1="146" x2="40" y2="111" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="145" y1="146" x2="111" y2="146" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="111" y1="146" x2="111" y2="111" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="5" y1="32" x2="5" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="5" y1="40" x2="40" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="146" y1="32" x2="146" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="146" y1="40" x2="111" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="5" y1="118" x2="40" y2="118" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="40" y1="118" x2="40" y2="111" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="146" y1="118" x2="111" y2="118" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="111" y1="118" x2="111" y2="111" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<circle cx="85" cy="55" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="75" cy="55" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="105" cy="55" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="55" cy="85" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="95" cy="55" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<text x="42" y="12" font-family="monospace" font-size="5" fill="#aaa" pointer-events="none">mux</text>
+<rect x="101" y="137" width="4" height="3" fill="#d93"/>
+<text x="106" y="140" font-family="monospace" font-size="3" fill="#aaa" pointer-events="none">M1</text>
+<rect x="101" y="142" width="4" height="3" fill="#66c"/>
+<text x="106" y="145" font-family="monospace" font-size="3" fill="#aaa" pointer-events="none">M2</text>
+<rect x="101" y="147" width="4" height="3" fill="#4a4"/>
+<text x="106" y="150" font-family="monospace" font-size="3" fill="#aaa" pointer-events="none">I/O</text>
+<rect x="101" y="152" width="4" height="3" fill="#c44"/>
+<text x="106" y="155" font-family="monospace" font-size="3" fill="#aaa" pointer-events="none">VDD</text>
+<rect x="101" y="157" width="4" height="3" fill="#44c"/>
+<text x="106" y="160" font-family="monospace" font-size="3" fill="#aaa" pointer-events="none">VSS</text>
+<rect x="0" y="0" width="151" height="151" fill="none" stroke="#888" stroke-width="1"/>
+</svg>

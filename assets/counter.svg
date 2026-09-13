@@ -1,0 +1,272 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 249 249"><title>counter</title>
+<defs>
+  <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+    <circle cx="5" cy="5" r="0.4" fill="#222"/>
+  </pattern>
+</defs>
+<rect x="0" y="0" width="249" height="249" fill="#0a0a0a"/>
+<rect x="0" y="0" width="249" height="249" fill="url(#grid)"/>
+<rect x="40" y="40" width="169" height="169" fill="#0c1a0c" stroke="#3a3" stroke-width="0.5"/>
+<line x1="40" y1="40" x2="209" y2="40" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="55" x2="209" y2="55" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="70" x2="209" y2="70" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="86" x2="209" y2="86" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="101" x2="209" y2="101" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="116" x2="209" y2="116" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="132" x2="209" y2="132" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="147" x2="209" y2="147" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="162" x2="209" y2="162" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="178" x2="209" y2="178" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="193" x2="209" y2="193" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="209" x2="209" y2="209" stroke="#22c" stroke-width="1" opacity="0.4"/>
+<line x1="40" y1="40" x2="40" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="55" y1="40" x2="55" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="70" y1="40" x2="70" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="86" y1="40" x2="86" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="101" y1="40" x2="101" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="116" y1="40" x2="116" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="132" y1="40" x2="132" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="147" y1="40" x2="147" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="162" y1="40" x2="162" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="178" y1="40" x2="178" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="193" y1="40" x2="193" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="209" y1="40" x2="209" y2="209" stroke="#c22" stroke-width="1" opacity="0.4"/>
+<line x1="55" y1="55" x2="45" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="55" x2="85" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="55" x2="105" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="145" y1="55" x2="195" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="145" y1="55" x2="155" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="145" y1="55" x2="135" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="115" y1="55" x2="175" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="115" y1="55" x2="175" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="115" y1="55" x2="165" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="85" y1="55" x2="135" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="85" y1="55" x2="125" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="85" y1="55" x2="115" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="105" y1="145" x2="75" y2="145" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="105" y1="145" x2="55" y2="145" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="105" y1="145" x2="85" y2="145" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="105" y1="145" x2="55" y2="145" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="45" y1="175" x2="75" y2="175" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="185" y1="85" x2="55" y2="85" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="195" y1="55" x2="85" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="85" y1="85" x2="75" y2="85" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="105" y1="115" x2="155" y2="115" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="105" y1="115" x2="135" y2="115" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="155" y1="85" x2="55" y2="85" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="135" y1="115" x2="175" y2="115" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="135" y1="115" x2="165" y2="115" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="175" y1="55" x2="85" y2="55" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="165" y1="115" x2="125" y2="115" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="165" y1="115" x2="115" y2="115" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="125" y1="145" x2="55" y2="145" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="75" y1="115" x2="55" y2="115" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="145" x2="145" y2="145" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="85" y1="145" x2="115" y2="145" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="85" x2="85" y2="85" stroke="#d93" stroke-width="1.5" opacity="0.7"/>
+<line x1="45" y1="55" x2="45" y2="115" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="85" y1="55" x2="85" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="105" y1="55" x2="105" y2="115" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="195" y1="55" x2="195" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="155" y1="55" x2="155" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="135" y1="55" x2="135" y2="115" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="175" y1="55" x2="175" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="165" y1="55" x2="165" y2="115" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="135" y1="55" x2="135" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="125" y1="55" x2="125" y2="145" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="115" y1="55" x2="115" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="75" y1="145" x2="75" y2="115" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="145" x2="55" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="75" y1="175" x2="75" y2="115" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="85" x2="55" y2="145" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="85" y1="55" x2="85" y2="145" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="115" x2="55" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="75" y1="85" x2="75" y2="115" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="155" y1="115" x2="155" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="85" x2="55" y2="145" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="175" y1="115" x2="175" y2="55" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="85" y1="55" x2="85" y2="145" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="125" y1="115" x2="125" y2="145" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="115" y1="115" x2="115" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="145" x2="55" y2="85" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="55" y1="115" x2="55" y2="55" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="145" y1="145" x2="145" y2="55" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="115" y1="145" x2="115" y2="55" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<line x1="85" y1="85" x2="85" y2="55" stroke="#66c" stroke-width="1.5" opacity="0.7"/>
+<polygon points="45,53 47,55 45,57 43,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="85,53 87,55 85,57 83,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="105,53 107,55 105,57 103,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="195,53 197,55 195,57 193,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="155,53 157,55 155,57 153,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="135,53 137,55 135,57 133,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="175,53 177,55 175,57 173,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="165,53 167,55 165,57 163,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="135,53 137,55 135,57 133,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="125,53 127,55 125,57 123,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="115,53 117,55 115,57 113,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="75,143 77,145 75,147 73,145" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="55,143 57,145 55,147 53,145" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="75,173 77,175 75,177 73,175" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="55,83 57,85 55,87 53,85" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="85,53 87,55 85,57 83,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="55,113 57,115 55,117 53,115" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="75,83 77,85 75,87 73,85" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="155,113 157,115 155,117 153,115" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="55,83 57,85 55,87 53,85" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="175,113 177,115 175,117 173,115" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="85,53 87,55 85,57 83,55" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="125,113 127,115 125,117 123,115" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="115,113 117,115 115,117 113,115" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="55,143 57,145 55,147 53,145" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="55,113 57,115 55,117 53,115" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="145,143 147,145 145,147 143,145" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="115,143 117,145 115,147 113,145" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<polygon points="85,83 87,85 85,87 83,85" fill="#ff4" stroke="#aa0" stroke-width="0.3"/>
+<rect x="40" y="100" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/count[0] (BUF)</title></rect>
+<rect x="190" y="70" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/count[1] (BUF)</title></rect>
+<rect x="170" y="70" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/count[2] (BUF)</title></rect>
+<rect x="130" y="70" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/count[3] (BUF)</title></rect>
+<rect x="100" y="130" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/_cond_4 (BUF)</title></rect>
+<rect x="40" y="160" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/_then_9_v_0 (BUF)</title></rect>
+<rect x="180" y="70" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/_then_9_v_1 (BUF)</title></rect>
+<rect x="190" y="40" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/_then_9_v_2 (BUF)</title></rect>
+<rect x="50" y="100" width="10" height="30" fill="#3cc" stroke="#000" stroke-width="0.5"><title>top/_then_9_v_3 (BUF)</title></rect>
+<rect x="70" y="70" width="30" height="30" fill="#c3c" stroke="#000" stroke-width="0.5"><title>top/_else_9_s_0 (XOR3)</title></rect>
+<rect x="90" y="100" width="30" height="30" fill="#36c" stroke="#000" stroke-width="0.5"><title>top/_else_9_c_0_c (MAJ3)</title></rect>
+<rect x="140" y="70" width="30" height="30" fill="#c3c" stroke="#000" stroke-width="0.5"><title>top/_else_9_s_1 (XOR3)</title></rect>
+<rect x="120" y="100" width="30" height="30" fill="#36c" stroke="#000" stroke-width="0.5"><title>top/_else_9_c_1_c (MAJ3)</title></rect>
+<rect x="160" y="40" width="30" height="30" fill="#c3c" stroke="#000" stroke-width="0.5"><title>top/_else_9_s_2 (XOR3)</title></rect>
+<rect x="150" y="100" width="30" height="30" fill="#36c" stroke="#000" stroke-width="0.5"><title>top/_else_9_c_2_c (MAJ3)</title></rect>
+<rect x="110" y="130" width="30" height="30" fill="#c3c" stroke="#000" stroke-width="0.5"><title>top/_else_9_s_3 (XOR3)</title></rect>
+<rect x="100" y="70" width="30" height="30" fill="#36c" stroke="#000" stroke-width="0.5"><title>top/_else_9_c_3_c (MAJ3)</title></rect>
+<rect x="60" y="100" width="30" height="30" fill="#36c" stroke="#000" stroke-width="0.5"><title>top/_mux_10 (MUX2)</title></rect>
+<rect x="40" y="40" width="30" height="30" fill="#2d5" stroke="#000" stroke-width="0.5"><title>top/cnt[0] (DFF)</title></rect>
+<rect x="40" y="130" width="30" height="30" fill="#36c" stroke="#000" stroke-width="0.5"><title>top/_mux_11 (MUX2)</title></rect>
+<rect x="130" y="40" width="30" height="30" fill="#2d5" stroke="#000" stroke-width="0.5"><title>top/cnt[1] (DFF)</title></rect>
+<rect x="70" y="130" width="30" height="30" fill="#36c" stroke="#000" stroke-width="0.5"><title>top/_mux_12 (MUX2)</title></rect>
+<rect x="100" y="40" width="30" height="30" fill="#2d5" stroke="#000" stroke-width="0.5"><title>top/cnt[2] (DFF)</title></rect>
+<rect x="40" y="70" width="30" height="30" fill="#36c" stroke="#000" stroke-width="0.5"><title>top/_mux_13 (MUX2)</title></rect>
+<rect x="70" y="40" width="30" height="30" fill="#2d5" stroke="#000" stroke-width="0.5"><title>top/cnt[3] (DFF)</title></rect>
+<text x="45" y="117" font-family="monospace" font-size="8" fill="#fff" text-anchor="middle" pointer-events="none">c0</text>
+<text x="45" y="126" font-family="monospace" font-size="4" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="195" y="87" font-family="monospace" font-size="8" fill="#fff" text-anchor="middle" pointer-events="none">c1</text>
+<text x="195" y="96" font-family="monospace" font-size="4" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="175" y="87" font-family="monospace" font-size="8" fill="#fff" text-anchor="middle" pointer-events="none">c2</text>
+<text x="175" y="96" font-family="monospace" font-size="4" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="135" y="87" font-family="monospace" font-size="8" fill="#fff" text-anchor="middle" pointer-events="none">c3</text>
+<text x="135" y="96" font-family="monospace" font-size="4" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="105" y="148" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">4</text>
+<text x="105" y="159" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="45" y="178" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">0</text>
+<text x="45" y="189" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="185" y="88" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">1</text>
+<text x="185" y="99" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="195" y="58" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">2</text>
+<text x="195" y="69" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="55" y="118" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">3</text>
+<text x="55" y="129" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">BUF</text>
+<text x="85" y="88" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">0</text>
+<text x="85" y="99" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">XOR3</text>
+<text x="105" y="118" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">c</text>
+<text x="105" y="129" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">MAJ3</text>
+<text x="155" y="88" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">1</text>
+<text x="155" y="99" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">XOR3</text>
+<text x="135" y="118" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">c</text>
+<text x="135" y="129" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">MAJ3</text>
+<text x="175" y="58" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">2</text>
+<text x="175" y="69" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">XOR3</text>
+<text x="165" y="118" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">c</text>
+<text x="165" y="129" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">MAJ3</text>
+<text x="125" y="148" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">3</text>
+<text x="125" y="159" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">XOR3</text>
+<text x="115" y="88" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">c</text>
+<text x="115" y="99" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">MAJ3</text>
+<text x="75" y="118" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">10</text>
+<text x="75" y="129" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">MUX2</text>
+<text x="55" y="58" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">c0</text>
+<text x="55" y="69" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">DFF</text>
+<text x="55" y="148" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">11</text>
+<text x="55" y="159" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">MUX2</text>
+<text x="145" y="58" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">c1</text>
+<text x="145" y="69" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">DFF</text>
+<text x="85" y="148" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">12</text>
+<text x="85" y="159" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">MUX2</text>
+<text x="115" y="58" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">c2</text>
+<text x="115" y="69" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">DFF</text>
+<text x="55" y="88" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">13</text>
+<text x="55" y="99" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">MUX2</text>
+<text x="85" y="58" font-family="monospace" font-size="10" fill="#fff" text-anchor="middle" pointer-events="none">c3</text>
+<text x="85" y="69" font-family="monospace" font-size="5" fill="#ccc" text-anchor="middle" pointer-events="none" opacity="0.7">DFF</text>
+<line x1="82" y1="5" x2="82" y2="145" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="82" y1="145" x2="105" y2="145" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="124" y1="5" x2="124" y2="85" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="124" y1="85" x2="85" y2="85" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="166" y1="5" x2="166" y2="175" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="166" y1="175" x2="45" y2="175" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="82" y1="244" x2="82" y2="85" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="82" y1="85" x2="85" y2="85" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="124" y1="244" x2="124" y2="115" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="124" y1="115" x2="45" y2="115" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="166" y1="244" x2="166" y2="85" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="166" y1="85" x2="195" y2="85" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="5" y1="82" x2="175" y2="82" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="175" y1="82" x2="175" y2="85" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="5" y1="124" x2="135" y2="124" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="135" y1="124" x2="135" y2="85" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="5" y1="166" x2="115" y2="166" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<line x1="115" y1="166" x2="115" y2="85" stroke="#4a4" stroke-width="0.8" opacity="0.6"/>
+<rect x="78" y="2" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="82" y="12" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">reset</text>
+<rect x="120" y="2" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="124" y="12" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">GND</text>
+<rect x="162" y="2" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="166" y="12" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">0</text>
+<rect x="78" y="241" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="82" y="239" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">1</text>
+<rect x="120" y="241" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="124" y="239" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">c0</text>
+<rect x="162" y="241" width="8" height="6" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="166" y="239" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">c1</text>
+<rect x="2" y="79" width="6" height="8" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="14" y="82" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none" transform="rotate(-90,14,82)">c2</text>
+<rect x="2" y="121" width="6" height="8" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="14" y="124" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none" transform="rotate(-90,14,124)">c3</text>
+<rect x="2" y="163" width="6" height="8" fill="#b86" stroke="#642" stroke-width="0.5"/><text x="14" y="166" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none" transform="rotate(-90,14,166)">_else</text>
+<rect x="2" y="2" width="8" height="6" fill="#c44" stroke="#642" stroke-width="0.5"/><text x="6" y="12" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">VDD</text>
+<rect x="239" y="2" width="8" height="6" fill="#c44" stroke="#642" stroke-width="0.5"/><text x="243" y="12" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">VDD</text>
+<rect x="2" y="241" width="8" height="6" fill="#44c" stroke="#642" stroke-width="0.5"/><text x="6" y="239" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">VSS</text>
+<rect x="239" y="241" width="8" height="6" fill="#44c" stroke="#642" stroke-width="0.5"/><text x="243" y="239" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none">VSS</text>
+<rect x="2" y="45" width="6" height="8" fill="#c44" stroke="#642" stroke-width="0.5"/><text x="14" y="48" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none" transform="rotate(-90,14,48)">VDD</text>
+<rect x="241" y="45" width="6" height="8" fill="#c44" stroke="#642" stroke-width="0.5"/><text x="237" y="48" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none" transform="rotate(90,237,48)">VDD</text>
+<rect x="2" y="203" width="6" height="8" fill="#44c" stroke="#642" stroke-width="0.5"/><text x="14" y="206" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none" transform="rotate(-90,14,206)">VSS</text>
+<rect x="241" y="203" width="6" height="8" fill="#44c" stroke="#642" stroke-width="0.5"/><text x="237" y="206" font-family="monospace" font-size="3" fill="#ccc" text-anchor="middle" pointer-events="none" transform="rotate(90,237,206)">VSS</text>
+<line x1="6" y1="5" x2="6" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="6" y1="40" x2="40" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="243" y1="5" x2="243" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="243" y1="40" x2="209" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="6" y1="244" x2="40" y2="244" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="40" y1="244" x2="40" y2="209" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="243" y1="244" x2="209" y2="244" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="209" y1="244" x2="209" y2="209" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="5" y1="45" x2="5" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="5" y1="40" x2="40" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="244" y1="45" x2="244" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="244" y1="40" x2="209" y2="40" stroke="#c22" stroke-width="1.2" opacity="0.7"/>
+<line x1="5" y1="203" x2="40" y2="203" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="40" y1="203" x2="40" y2="209" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="244" y1="203" x2="209" y2="203" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<line x1="209" y1="203" x2="209" y2="209" stroke="#22c" stroke-width="1.2" opacity="0.7"/>
+<circle cx="105" cy="145" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="85" cy="85" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="45" cy="175" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="85" cy="85" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="45" cy="115" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="195" cy="85" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="175" cy="85" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="135" cy="85" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<circle cx="115" cy="85" r="2.5" fill="#fc0" stroke="#d93" stroke-width="0.5" opacity="0.4"/>
+<text x="42" y="12" font-family="monospace" font-size="5" fill="#aaa" pointer-events="none">counter</text>
+<rect x="199" y="235" width="4" height="3" fill="#d93"/>
+<text x="204" y="238" font-family="monospace" font-size="3" fill="#aaa" pointer-events="none">M1</text>
+<rect x="199" y="240" width="4" height="3" fill="#66c"/>
+<text x="204" y="243" font-family="monospace" font-size="3" fill="#aaa" pointer-events="none">M2</text>
+<rect x="199" y="245" width="4" height="3" fill="#4a4"/>
+<text x="204" y="248" font-family="monospace" font-size="3" fill="#aaa" pointer-events="none">I/O</text>
+<rect x="199" y="250" width="4" height="3" fill="#c44"/>
+<text x="204" y="253" font-family="monospace" font-size="3" fill="#aaa" pointer-events="none">VDD</text>
+<rect x="199" y="255" width="4" height="3" fill="#44c"/>
+<text x="204" y="258" font-family="monospace" font-size="3" fill="#aaa" pointer-events="none">VSS</text>
+<rect x="0" y="0" width="249" height="249" fill="none" stroke="#888" stroke-width="1"/>
+</svg>

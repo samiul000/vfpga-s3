@@ -202,6 +202,16 @@ build/vfpga build examples/physical/counter.v --svg
 build/vfpga report examples/physical/mux.v
 ```
 
+### Chip Layout Visualization
+
+<table>
+<tr>
+<td align="center"><img src="assets/and.svg" width="30%" alt="AND gate layout"><br><sub>AND gate (1 cell)</sub></td>
+<td align="center"><img src="assets/counter.svg" width="30%" alt="Counter layout"><br><sub>4-bit counter (25 cells)</sub></td>
+<td align="center"><img src="assets/mux.svg" width="30%" alt="MUX layout"><br><sub>MUX with register (6 cells)</sub></td>
+</tr>
+</table>
+
 ## RISC-V CPU
 
 Integrated RV32I emulator with 37 instructions, 64 KB RAM, and memory-mapped I/O.
