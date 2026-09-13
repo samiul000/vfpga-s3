@@ -1139,7 +1139,7 @@ std::string layout_export_svg(const std::string &design, const DesignIR &ir,
     for (auto &[dx, dy] : io_dots) {
         snprintf(b, sizeof(b),
                  "<circle cx=\"%lld\" cy=\"%lld\" r=\"2.5\" "
-                 "fill=\"#fc0\" stroke=\"#d93\" stroke-width=\"0.5\"/>\n",
+                 "fill=\"#fc0\" stroke=\"#d93\" stroke-width=\"0.5\" opacity=\"0.4\"/>\n",
                  (long long)dx, (long long)dy);
         o += b;
     }
