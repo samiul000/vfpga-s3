@@ -175,10 +175,12 @@ Learn the FPGA flow without hardware: compile, simulate with a testbench, and in
 # build the host CLI (C++17)
 g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
   -Ihost_test/simulator -Ihost_test/waveform -Ihost_test/testbench \
+  -Ihost_test/physical \
   tools/cli/main.cpp host_test/simulator/sim.cpp \
   host_test/testbench/tb.cpp host_test/testbench/tb_exec.cpp \
   host_test/testbench/auto_tb.cpp \
   host_test/waveform/vcd.cpp host_test/waveform/gtkwave.cpp \
+  host_test/physical/physical_design.cpp \
   src/hdl/lexer.cpp src/hdl/parser.cpp \
   src/hdl/netlist.cpp src/hdl/mapper.cpp \
   -o build/vfpga
@@ -186,6 +188,18 @@ g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
 # verify a tutorial design and open the waveform
 build/vfpga verify examples/tutorial/06_counter/design.vhdl \
   --tb examples/tutorial/06_counter/design.tb --wave --open
+```
+
+## ASIC-Style Physical Design (Educational)
+
+The same HDL also runs through an educational ASIC backend: standard-cell
+mapping → floorplan → placement → routing → layout DB. Abstract units,
+estimated timing, Educational DRC — a teaching model, not foundry-accurate.
+See [PHYSICAL_DESIGN.md](docs/PHYSICAL_DESIGN.md).
+
+```bash
+build/vfpga build examples/physical/counter.v --svg
+build/vfpga report examples/physical/mux.v
 ```
 
 ## RISC-V CPU
@@ -285,6 +299,7 @@ The VFPGA-S3 does not compete with silicon FPGAs on clock speed. Its value propo
 | [AGENTS.md](AGENTS.md) | Environment setup for AI agents (compiler, GTKWave, per-platform) |
 | [HDL_GUIDE.md](docs/HDL_GUIDE.md) | HDL syntax, examples, and pipeline usage |
 | [SIMULATOR.md](docs/SIMULATOR.md) | Host simulator, testbench DSL, VCD/GTKWave workflow (no board needed) |
+| [PHYSICAL_DESIGN.md](docs/PHYSICAL_DESIGN.md) | Educational ASIC backend: cells, floorplan, place, route, layout DB |
 | [RISC-V.md](docs/RISC-V.md) | RV32I instruction set, API, programming examples |
 | [performance.md](docs/performance.md) | Hardware benchmarks and comparison data |
 

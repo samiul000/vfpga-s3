@@ -88,11 +88,13 @@ jobs:
         run: |
           g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
             -Ihost_test/simulator -Ihost_test/waveform -Ihost_test/testbench \
+            -Ihost_test/physical \
             tools/cli/main.cpp \
             host_test/simulator/sim.cpp \
             host_test/testbench/tb.cpp host_test/testbench/tb_exec.cpp \
             host_test/testbench/auto_tb.cpp \
             host_test/waveform/vcd.cpp host_test/waveform/gtkwave.cpp \
+            host_test/physical/physical_design.cpp \
             src/hdl/lexer.cpp src/hdl/parser.cpp \
             src/hdl/netlist.cpp src/hdl/mapper.cpp \
             -o /tmp/vfpga
@@ -110,6 +112,29 @@ jobs:
             /tmp/vfpga verify examples/tutorial/$t/design.vhdl \
               --tb examples/tutorial/$t/design.tb --wave || exit 1
           done
+      - name: CLI physical flow over examples
+        run: |
+          /tmp/vfpga map examples/physical/and.v --target asic
+          /tmp/vfpga build examples/physical/counter.v --svg
+          test -f build/physical/counter.layout.json
+          /tmp/vfpga report examples/physical/mux.v
+
+  sim-physical-test:
+    # Educational ASIC backend (host_test/physical). Needs C++17.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile physical engine test with host g++
+        run: |
+          g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
+            -Ihost_test/physical \
+            host_test/physical/test_physical.cpp \
+            host_test/physical/physical_design.cpp \
+            src/hdl/lexer.cpp src/hdl/parser.cpp \
+            src/hdl/netlist.cpp src/hdl/mapper.cpp \
+            -o /tmp/test_physical
+      - name: Run physical engine tests
+        run: /tmp/test_physical
 
   verilog-sim-synth:
     # Simulates the VerilogEmitter golden outputs; `+` agrees via the

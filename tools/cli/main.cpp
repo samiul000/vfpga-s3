@@ -12,6 +12,7 @@
 #include "mapper.h"
 #include "netlist.h"
 #include "parser.h"
+#include "physical_design.h"
 #include "sim.h"
 #include "tb.h"
 #include "tb_exec.h"
@@ -154,6 +155,183 @@ void usage() {
     printf("         [--report] [--fabric-debug] [--cycles N]\n");
     printf("  vfpga signals <design>\n");
     printf("  vfpga wave <file.vcd>\n");
+    printf("  vfpga map <design> [--target asic|vfpga]\n");
+    printf("  vfpga synth <design> [--target asic]\n");
+    printf("  vfpga floorplan|place|route|timing|congestion <design>\n");
+    printf("         [--algorithm greedy_wirelength|row_pack|random_seeded]\n");
+    printf("         [--seed N] [--utilization F]\n");
+    printf("  vfpga layout <design>|open <file> [--output f] [--svg f] [--open]\n");
+    printf("  vfpga report <design>   (VFPGA-vs-ASIC comparison)\n");
+    printf("  vfpga build <design>    (full ASIC flow: map..route+reports)\n");
+}
+
+// Educational ASIC flow. Returns 0 ok, 2 compile fail, 4 physical error.
+int cmd_compile(const char *path);  // defined below
+int cmd_physical(const char *sub, const char *design_path, int argc,
+                 char **argv) {
+    using namespace physical;
+    std::string cmd = sub;
+    // `layout open <file>` form: design_path is the layout file.
+    if (cmd == "open" && design_path) {
+        bool ok = false;
+        std::string js = read_file(design_path, ok);
+        if (!ok) {
+            printf("error: cannot read '%s'\n", design_path);
+            return 2;
+        }
+        std::string name, err;
+        if (!layout_import_check(js, name, err)) {
+            printf("%s\n", err.c_str());
+            return 4;
+        }
+        printf("Layout: %s (%s)\n", name.c_str(), design_path);
+        return 0;
+    }
+    if (!design_path) {
+        usage();
+        return 2;
+    }
+    Design d;
+    int rc = load_design(design_path, d);
+    if (rc) return rc;
+    std::string target = flag_value(argc, argv, "--target", "asic");
+    if (cmd == "map" && target == "vfpga") return cmd_compile(design_path);
+
+    DesignIR ir;
+    std::string err;
+    if (!build_ir(d.nl, d.cfg, ir, err)) {
+        printf("%s\n", err.c_str());
+        return 4;
+    }
+    if (cmd == "map" || cmd == "synth") {
+        size_t seq = 0;
+        for (size_t i = 0; i < ir.insts.size(); ++i)
+            if (ir.insts[i].sequential) ++seq;
+        printf("ASIC mapping: %lu cells (%lu sequential)\n",
+               (unsigned long)ir.insts.size(), (unsigned long)seq);
+        if (cmd == "synth")
+            printf("(educational mapping; use OpenROAD for real synthesis)\n");
+        return 0;
+    }
+    PlaceOptions opt;
+    std::string algo =
+        flag_value(argc, argv, "--algorithm", "greedy_wirelength");
+    opt.algorithm = algo.c_str();
+    opt.seed = atoi(flag_value(argc, argv, "--seed", "1").c_str());
+    opt.utilization = atof(flag_value(argc, argv, "--utilization", "0.6").c_str());
+    Floorplan fp;
+    if (!floorplan_place(ir, opt, fp, err)) {
+        printf("%s\n", err.c_str());
+        return 4;
+    }
+    if (cmd == "floorplan" || cmd == "place") {
+        printf("Floorplan: die %lldx%lld, core %lldx%lld @(%lld,%lld), %lld rows\n",
+               (long long)fp.die_w, (long long)fp.die_h,
+               (long long)fp.core_w, (long long)fp.core_h,
+               (long long)fp.core_x, (long long)fp.core_y,
+               (long long)fp.rows);
+        printf("Placement: %lu instances (%s, seed %d), HPWL %lld\n",
+               (unsigned long)fp.insts.size(), opt.algorithm, opt.seed,
+               (long long)total_hpwl(ir, fp));
+        return 0;
+    }
+    RouteResult rr = route(ir, fp);
+    TimingResult tm = estimate_timing(ir, fp);
+    Congestion cg = analyze_congestion(ir, fp, rr);
+    if (cmd == "route") {
+        printf("Routing: %lu segs, %lu vias, %lu unrouted\n",
+               (unsigned long)rr.segs.size(), (unsigned long)rr.vias.size(),
+               (unsigned long)rr.unrouted);
+        for (size_t i = 0; i < rr.drc.size(); ++i)
+            printf("%s\n", rr.drc[i].c_str());
+        return rr.unrouted ? 4 : 0;
+    }
+    if (cmd == "timing") {
+        ClockTree ct = build_clock_tree(ir);
+        printf("Estimated timing (ps): crit %lld, WNS %lld, TNS %lld\n",
+               (long long)tm.crit_ps, (long long)tm.wns_ps,
+               (long long)tm.tns_ps);
+        printf("Critical path:");
+        for (size_t i = 0; i < tm.crit_path.size(); ++i)
+            printf(" %s", tm.crit_path[i].c_str());
+        printf("\nClock '%s': %lu sinks, %lu buffers, depth %d\n",
+               ct.net.c_str(), (unsigned long)ct.sinks,
+               (unsigned long)ct.buffers, ct.depth);
+        return 0;
+    }
+    if (cmd == "congestion") {
+        printf("Congestion: max %.2f, avg %.2f, overflow tiles %d\n",
+               cg.max_use, cg.avg_use, cg.overflow_tiles);
+        return 0;
+    }
+    if (cmd == "report") {
+        printf("================ IMPLEMENTATION COMPARISON ================\n");
+        printf("Metric                 VFPGA                   ASIC\n");
+        printf("Logic Resources        %lu LUT4               %lu cells\n",
+               (unsigned long)d.cfg.luts.size(),
+               (unsigned long)ir.insts.size());
+        printf("Sequential Elements    %lu FFs                 %lu DFF\n",
+               (unsigned long)d.cfg.ffs.size(),
+               (unsigned long)build_clock_tree(ir).sinks);
+        printf("Routing                Virtual Matrix          2 Metal Layers\n");
+        printf("Area                   %lu Soft LUTs           %lld u^2 (die %lldx%lld)\n",
+               (unsigned long)d.cfg.luts.size(),
+               (long long)(fp.die_w * fp.die_h), (long long)fp.die_w,
+               (long long)fp.die_h);
+        printf("Est. Timing            ESP32 Exec Cycles       %lld ps crit\n",
+               (long long)tm.crit_ps);
+        printf("===========================================================\n");
+        return 0;
+    }
+    // layout / build: export JSON (+SVG), write reports
+    ensure_dir("build/physical");
+    ensure_dir("build/reports");
+    std::string out = flag_value(argc, argv, "--output", "");
+    if (out.empty())
+        out = std::string("build/physical/") + d.base + ".layout.json";
+    std::string js = layout_export_json(d.base, ir, fp, rr, tm);
+    FILE *f = fopen(out.c_str(), "wb");
+    if (!f) {
+        printf("error: cannot write '%s'\n", out.c_str());
+        return 4;
+    }
+    fwrite(js.data(), 1, js.size(), f);
+    fclose(f);
+    std::string svg = flag_value(argc, argv, "--svg", "");
+    if (!svg.empty() || has_flag(argc, argv, "--open")) {
+        if (svg.empty())
+            svg = std::string("build/physical/") + d.base + ".svg";
+        std::string pic = layout_export_svg(d.base, fp, rr);
+        FILE *g = fopen(svg.c_str(), "wb");
+        if (g) {
+            fwrite(pic.data(), 1, pic.size(), g);
+            fclose(g);
+        }
+    }
+    printf("Layout: %s (%lu insts, %lu segs, %lu vias)\n", out.c_str(),
+           (unsigned long)fp.insts.size(), (unsigned long)rr.segs.size(),
+           (unsigned long)rr.vias.size());
+    if (cmd == "build") {
+        char rp[256];
+        snprintf(rp, sizeof(rp), "build/reports/%s.txt", d.base.c_str());
+        FILE *h = fopen(rp, "wb");
+        if (h) {
+            fprintf(h, "design %s\ncells %lu\nhpwl %lld\ncrit_ps %lld\n"
+                       "wns_ps %lld\ncong_max %.2f\nunrouted %lu\n",
+                    d.base.c_str(), (unsigned long)ir.insts.size(),
+                    (long long)total_hpwl(ir, fp), (long long)tm.crit_ps,
+                    (long long)tm.wns_ps, cg.max_use,
+                    (unsigned long)rr.unrouted);
+            fclose(h);
+        }
+        printf("Report: %s\n", rp);
+    }
+    if (has_flag(argc, argv, "--open")) {
+        int grc = open_wave(out.c_str());
+        if (grc == 5)
+            printf("(no viewer for layout files; JSON+SVG written)\n");
+    }
+    return rr.unrouted && cmd == "build" ? 4 : 0;
 }
 
 // Run tb (or auto tb), optionally write VCD. Returns ExecResult; sets vcd_path.
@@ -315,6 +493,12 @@ int main(int argc, char **argv) {
         if (rc == 0) printf("Opening %s in GTKWave\n", argv[2]);
         return rc;
     }
+    if ((cmd == "map" || cmd == "synth" || cmd == "floorplan" ||
+         cmd == "place" || cmd == "route" || cmd == "timing" ||
+         cmd == "congestion" || cmd == "layout" || cmd == "report" ||
+         cmd == "build" || cmd == "open") &&
+        argc >= 3)
+        return cmd_physical(argv[1], argv[2], argc, argv);
     usage();
     return 2;
 }

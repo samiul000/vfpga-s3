@@ -77,10 +77,12 @@ Build the CLI (any C++17 compiler; CI uses Ubuntu g++):
 ```bash
 g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
   -Ihost_test/simulator -Ihost_test/waveform -Ihost_test/testbench \
+  -Ihost_test/physical \
   tools/cli/main.cpp host_test/simulator/sim.cpp \
   host_test/testbench/tb.cpp host_test/testbench/tb_exec.cpp \
   host_test/testbench/auto_tb.cpp \
   host_test/waveform/vcd.cpp host_test/waveform/gtkwave.cpp \
+  host_test/physical/physical_design.cpp \
   src/hdl/lexer.cpp src/hdl/parser.cpp \
   src/hdl/netlist.cpp src/hdl/mapper.cpp \
   -o build/vfpga
