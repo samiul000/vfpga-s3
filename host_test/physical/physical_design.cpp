@@ -832,7 +832,7 @@ std::string layout_export_svg(const std::string &design, const DesignIR &ir,
     // --- layer 8: cell labels ---
     for (size_t i = 0; i < fp.insts.size(); ++i) {
         const PlacedInst &p = fp.insts[i];
-        if (p.w < 15 || p.h < 10) continue;
+        if (p.w < 6 || p.h < 6) continue;
         // Shorten label: strip "top/", then last _ segment, then brackets
         std::string label = p.name;
         if (label.size() > 4 && label.substr(0, 4) == "top/")
@@ -878,7 +878,7 @@ std::string layout_export_svg(const std::string &design, const DesignIR &ir,
         json_escape(o, label);
         o += "</text>\n";
         // cell-type label in smaller text below the name
-        if (p.h >= 14) {
+        if (p.h >= 10) {
             int64_t fs2 = fs > 5 ? fs / 2 : 3;
             int64_t ty2 = ty + fs + 1;
             snprintf(b, sizeof(b),
@@ -893,6 +893,7 @@ std::string layout_export_svg(const std::string &design, const DesignIR &ir,
     }
 
     // --- layer 9: I/O pad ring connections (green, drawn BEFORE pads) ---
+    std::vector<std::pair<int64_t, int64_t>> io_dots;
     int64_t pad_w = 8, pad_h = 6;
     int nports = (int)all_ports.size();
     int pads_per_side = nports > 0 ? (nports + 3) / 4 : 3;
@@ -949,12 +950,7 @@ std::string layout_export_svg(const std::string &design, const DesignIR &ir,
                 io_route(pad_cx, pad_cy, cell_cx, pad_cy);
                 io_route(cell_cx, pad_cy, cell_cx, cell_cy);
             }
-            // gold dot at pad end to mark connection point
-            snprintf(b, sizeof(b),
-                     "<circle cx=\"%lld\" cy=\"%lld\" r=\"1.5\" "
-                     "fill=\"#fc0\" stroke=\"#d93\" stroke-width=\"0.5\"/>\n",
-                     (long long)pad_cx, (long long)pad_cy);
-            o += b;
+            io_dots.push_back({cell_cx, cell_cy});
         }
     }
 
@@ -1054,10 +1050,15 @@ std::string layout_export_svg(const std::string &design, const DesignIR &ir,
     emit_pad(fp.die_w - 2 - pad_w, 2, pad_w, pad_h, "#c44", "VDD", 0);
     emit_pad(2, fp.die_h - 2 - pad_h, pad_w, pad_h, "#44c", "VSS", 180);
     emit_pad(fp.die_w - 2 - pad_w, fp.die_h - 2 - pad_h, pad_w, pad_h, "#44c", "VSS", 180);
-    emit_pad(2, fp.core_y + fp.core_h / 2 - pad_h / 2, pad_h, pad_w, "#c44", "VDD", -90);
-    emit_pad(fp.die_w - 2 - pad_h, fp.core_y + fp.core_h / 4 - pad_w / 2, pad_h, pad_w, "#44c", "VSS", 90);
-    emit_pad(2, fp.core_y + fp.core_h * 3 / 4 - pad_w / 2, pad_h, pad_w, "#44c", "VSS", -90);
-    emit_pad(fp.die_w - 2 - pad_h, fp.core_y + fp.core_h / 2 - pad_h / 2, pad_h, pad_w, "#c44", "VDD", 90);
+    // Side power pads: placed in gap between corner pads and signal pads
+    int64_t first_signal_y = fp.core_y + fp.core_h / (pads_per_side + 1);
+    int64_t last_signal_y = fp.core_y + (int64_t)pads_per_side * fp.core_h / (pads_per_side + 1);
+    int64_t side_vdd_y = (pad_h + 2 + first_signal_y) / 2;
+    int64_t side_vss_y = (last_signal_y + fp.die_h - 2 - pad_h) / 2;
+    emit_pad(2, side_vdd_y, pad_h, pad_w, "#c44", "VDD", -90);
+    emit_pad(fp.die_w - 2 - pad_h, side_vdd_y, pad_h, pad_w, "#c44", "VDD", 90);
+    emit_pad(2, side_vss_y, pad_h, pad_w, "#44c", "VSS", -90);
+    emit_pad(fp.die_w - 2 - pad_h, side_vss_y, pad_h, pad_w, "#44c", "VSS", 90);
 
     // --- layer 10.5: power pad → power grid connections ---
     // VDD pads connect to vertical VDD stripes (#c22), VSS pads to horizontal VSS stripes (#22c)
@@ -1125,16 +1126,25 @@ std::string layout_export_svg(const std::string &design, const DesignIR &ir,
     pwr_route(6, fp.die_h - 5, "#22c");
     // Bottom-right VSS
     pwr_route(fp.die_w - 6, fp.die_h - 5, "#22c");
-    // Left middle VDD
-    pwr_route(5, fp.core_y + fp.core_h / 2, "#c22");
-    // Right upper VSS
-    pwr_route(fp.die_w - 5, fp.core_y + fp.core_h / 4, "#22c");
-    // Left lower VSS
-    pwr_route(5, fp.core_y + fp.core_h * 3 / 4, "#22c");
-    // Right middle VDD
-    pwr_route(fp.die_w - 5, fp.core_y + fp.core_h / 2, "#c22");
+    // Left side VDD
+    pwr_route(5, side_vdd_y, "#c22");
+    // Right side VDD
+    pwr_route(fp.die_w - 5, side_vdd_y, "#c22");
+    // Left side VSS
+    pwr_route(5, side_vss_y, "#22c");
+    // Right side VSS
+    pwr_route(fp.die_w - 5, side_vss_y, "#22c");
 
-    // --- layer 10: title + legend ---
+    // --- layer 11: I/O connection dots (gold, on top of everything) ---
+    for (auto &[dx, dy] : io_dots) {
+        snprintf(b, sizeof(b),
+                 "<circle cx=\"%lld\" cy=\"%lld\" r=\"2.5\" "
+                 "fill=\"#fc0\" stroke=\"#d93\" stroke-width=\"0.5\"/>\n",
+                 (long long)dx, (long long)dy);
+        o += b;
+    }
+
+    // --- layer 12: title + legend ---
     snprintf(b, sizeof(b),
              "<text x=\"%lld\" y=\"12\" font-family=\"monospace\" "
              "font-size=\"5\" fill=\"#aaa\" pointer-events=\"none\">",
