@@ -408,8 +408,10 @@ void Netlist::build_from_ast(const std::vector<AstNode> &ast) {
 // created only at the outermost call.
 // ---------------------------------------------------------------------------
 void Netlist::build_if_chain(const AstNode &ifnode, const std::string &reg_name) {
-    int32_t width = bus_width(reg_name);
-    if (width <= 0) width = 1;
+    int32_t raw_width = bus_width(reg_name);
+    bool scalar = (raw_width <= 1);
+    int32_t width = scalar ? 1 : raw_width;
+    uint16_t scalar_net = scalar ? ensure_net(reg_name) : 0;
     uint16_t gnd = ensure_net("GND");
 
     // Recursive MUX-tree builder.  Returns per-bit mux-output nets.
@@ -445,7 +447,7 @@ void Netlist::build_if_chain(const AstNode &ifnode, const std::string &reg_name)
             if (!bn) {
                 std::vector<uint16_t> v(width);
                 for (int32_t b = 0; b < width; ++b)
-                    v[b] = ensure_bus_net(reg_name, b);
+                    v[b] = scalar ? scalar_net : ensure_bus_net(reg_name, b);
                 return v;
             }
             if (bn->type == AstNode::Type::IF) return tree(*bn);
@@ -488,7 +490,7 @@ void Netlist::build_if_chain(const AstNode &ifnode, const std::string &reg_name)
 
             std::vector<uint16_t> v(width);
             for (int32_t b = 0; b < width; ++b)
-                v[b] = ensure_bus_net(reg_name, b);
+                v[b] = scalar ? scalar_net : ensure_bus_net(reg_name, b);
             return v;
         };
 
@@ -516,7 +518,7 @@ void Netlist::build_if_chain(const AstNode &ifnode, const std::string &reg_name)
 
     // --- per-bit FFs (outermost call only) ---
     for (int32_t b = 0; b < width; ++b) {
-        uint16_t rb = ensure_bus_net(reg_name, b);
+        uint16_t rb = scalar ? scalar_net : ensure_bus_net(reg_name, b);
         NetlistComponent ff;
         ff.type   = NetlistComponent::Type::FF;
         ff.id     = static_cast<uint16_t>(components_.size());
