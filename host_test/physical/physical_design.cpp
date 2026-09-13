@@ -877,6 +877,19 @@ std::string layout_export_svg(const std::string &design, const DesignIR &ir,
         o += b;
         json_escape(o, label);
         o += "</text>\n";
+        // cell-type label in smaller text below the name
+        if (p.h >= 14) {
+            int64_t fs2 = fs > 5 ? fs / 2 : 3;
+            int64_t ty2 = ty + fs + 1;
+            snprintf(b, sizeof(b),
+                     "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" "
+                     "font-size=\"%lld\" fill=\"#ccc\" text-anchor=\"middle\" "
+                     "pointer-events=\"none\" opacity=\"0.7\">",
+                     (long long)tx, (long long)ty2, (long long)fs2);
+            o += b;
+            json_escape(o, p.cell);
+            o += "</text>\n";
+        }
     }
 
     // --- layer 9: I/O pad ring connections (green, drawn BEFORE pads) ---
@@ -936,6 +949,12 @@ std::string layout_export_svg(const std::string &design, const DesignIR &ir,
                 io_route(pad_cx, pad_cy, cell_cx, pad_cy);
                 io_route(cell_cx, pad_cy, cell_cx, cell_cy);
             }
+            // gold dot at pad end to mark connection point
+            snprintf(b, sizeof(b),
+                     "<circle cx=\"%lld\" cy=\"%lld\" r=\"1.5\" "
+                     "fill=\"#fc0\" stroke=\"#d93\" stroke-width=\"0.5\"/>\n",
+                     (long long)pad_cx, (long long)pad_cy);
+            o += b;
         }
     }
 
@@ -1039,6 +1058,81 @@ std::string layout_export_svg(const std::string &design, const DesignIR &ir,
     emit_pad(fp.die_w - 2 - pad_h, fp.core_y + fp.core_h / 4 - pad_w / 2, pad_h, pad_w, "#44c", "VSS", 90);
     emit_pad(2, fp.core_y + fp.core_h * 3 / 4 - pad_w / 2, pad_h, pad_w, "#44c", "VSS", -90);
     emit_pad(fp.die_w - 2 - pad_h, fp.core_y + fp.core_h / 2 - pad_h / 2, pad_h, pad_w, "#c44", "VDD", 90);
+
+    // --- layer 10.5: power pad → power grid connections ---
+    // VDD pads connect to vertical VDD stripes (#c22), VSS pads to horizontal VSS stripes (#22c)
+    auto pwr_route = [&](int64_t px, int64_t py, const char *clr) {
+        // Find nearest VDD vertical stripe x or VSS horizontal stripe y
+        // For VDD (#c22): route to nearest vertical stripe (core_x + i * core_w / 11)
+        // For VSS (#22c): route to nearest horizontal stripe (core_y + i * core_h / 11)
+        bool vdd = (clr[1] == 'c' && clr[2] == '2');
+        if (vdd) {
+            // Vertical VDD stripe — find closest x
+            int64_t best_x = fp.core_x, best_dist = llabs(px - fp.core_x);
+            for (int i = 0; i < 12; ++i) {
+                int64_t sx = fp.core_x + (int64_t)i * fp.core_w / 11;
+                int64_t d = llabs(px - sx);
+                if (d < best_dist) { best_dist = d; best_x = sx; }
+            }
+            // Route pad → best_x at core edge (top or bottom, whichever closer)
+            int64_t ey = (py < fp.core_y + fp.core_h / 2) ? fp.core_y : fp.core_y + fp.core_h;
+            if (px != best_x) {
+                snprintf(b, sizeof(b), "<line x1=\"%lld\" y1=\"%lld\" x2=\"%lld\" y2=\"%lld\" "
+                         "stroke=\"%s\" stroke-width=\"1.2\" opacity=\"0.7\"/>\n",
+                         (long long)px, (long long)py, (long long)px, (long long)ey, clr);
+                o += b;
+                snprintf(b, sizeof(b), "<line x1=\"%lld\" y1=\"%lld\" x2=\"%lld\" y2=\"%lld\" "
+                         "stroke=\"%s\" stroke-width=\"1.2\" opacity=\"0.7\"/>\n",
+                         (long long)px, (long long)ey, (long long)best_x, (long long)ey, clr);
+                o += b;
+            } else {
+                snprintf(b, sizeof(b), "<line x1=\"%lld\" y1=\"%lld\" x2=\"%lld\" y2=\"%lld\" "
+                         "stroke=\"%s\" stroke-width=\"1.2\" opacity=\"0.7\"/>\n",
+                         (long long)px, (long long)py, (long long)best_x, (long long)ey, clr);
+                o += b;
+            }
+        } else {
+            // Horizontal VSS stripe — find closest y
+            int64_t best_y = fp.core_y, best_dist = llabs(py - fp.core_y);
+            for (int i = 0; i < 12; ++i) {
+                int64_t sy = fp.core_y + (int64_t)i * fp.core_h / 11;
+                int64_t d = llabs(py - sy);
+                if (d < best_dist) { best_dist = d; best_y = sy; }
+            }
+            int64_t ex = (px < fp.core_x + fp.core_w / 2) ? fp.core_x : fp.core_x + fp.core_w;
+            if (py != best_y) {
+                snprintf(b, sizeof(b), "<line x1=\"%lld\" y1=\"%lld\" x2=\"%lld\" y2=\"%lld\" "
+                         "stroke=\"%s\" stroke-width=\"1.2\" opacity=\"0.7\"/>\n",
+                         (long long)px, (long long)py, (long long)ex, (long long)py, clr);
+                o += b;
+                snprintf(b, sizeof(b), "<line x1=\"%lld\" y1=\"%lld\" x2=\"%lld\" y2=\"%lld\" "
+                         "stroke=\"%s\" stroke-width=\"1.2\" opacity=\"0.7\"/>\n",
+                         (long long)ex, (long long)py, (long long)ex, (long long)best_y, clr);
+                o += b;
+            } else {
+                snprintf(b, sizeof(b), "<line x1=\"%lld\" y1=\"%lld\" x2=\"%lld\" y2=\"%lld\" "
+                         "stroke=\"%s\" stroke-width=\"1.2\" opacity=\"0.7\"/>\n",
+                         (long long)px, (long long)py, (long long)ex, (long long)best_y, clr);
+                o += b;
+            }
+        }
+    };
+    // Top-left VDD
+    pwr_route(6, 5, "#c22");
+    // Top-right VDD
+    pwr_route(fp.die_w - 6, 5, "#c22");
+    // Bottom-left VSS
+    pwr_route(6, fp.die_h - 5, "#22c");
+    // Bottom-right VSS
+    pwr_route(fp.die_w - 6, fp.die_h - 5, "#22c");
+    // Left middle VDD
+    pwr_route(5, fp.core_y + fp.core_h / 2, "#c22");
+    // Right upper VSS
+    pwr_route(fp.die_w - 5, fp.core_y + fp.core_h / 4, "#22c");
+    // Left lower VSS
+    pwr_route(5, fp.core_y + fp.core_h * 3 / 4, "#22c");
+    // Right middle VDD
+    pwr_route(fp.die_w - 5, fp.core_y + fp.core_h / 2, "#c22");
 
     // --- layer 10: title + legend ---
     snprintf(b, sizeof(b),
