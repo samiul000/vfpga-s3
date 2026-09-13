@@ -1048,35 +1048,22 @@ std::string layout_export_svg(const std::string &design, const DesignIR &ir,
     o += b;
     json_escape(o, design);
     o += "</text>\n";
-    // Legend
+    // Legend — one snprintf per entry to fit b[512]
     int64_t lx = fp.die_w - 50, ly = fp.die_h - 14;
-    snprintf(b, sizeof(b),
-             "<rect x=\"%lld\" y=\"%lld\" width=\"4\" height=\"3\" fill=\"#d93\"/>\n"
-             "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" font-size=\"3\" "
-             "fill=\"#aaa\" pointer-events=\"none\">M1</text>\n"
-             "<rect x=\"%lld\" y=\"%lld\" width=\"4\" height=\"3\" fill=\"#66c\"/>\n"
-             "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" font-size=\"3\" "
-             "fill=\"#aaa\" pointer-events=\"none\">M2</text>\n"
-             "<rect x=\"%lld\" y=\"%lld\" width=\"4\" height=\"3\" fill=\"#4a4\"/>\n"
-             "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" font-size=\"3\" "
-             "fill=\"#aaa\" pointer-events=\"none\">I/O</text>\n"
-             "<rect x=\"%lld\" y=\"%lld\" width=\"4\" height=\"3\" fill=\"#c44\"/>\n"
-             "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" font-size=\"3\" "
-             "fill=\"#aaa\" pointer-events=\"none\">VDD</text>\n"
-             "<rect x=\"%lld\" y=\"%lld\" width=\"4\" height=\"3\" fill=\"#44c\"/>\n"
-             "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" font-size=\"3\" "
-             "fill=\"#aaa\" pointer-events=\"none\">VSS</text>\n",
-             (long long)lx, (long long)ly,
-             (long long)(lx + 5), (long long)(ly + 3),
-             (long long)lx, (long long)(ly + 5),
-             (long long)(lx + 5), (long long)(ly + 8),
-             (long long)lx, (long long)(ly + 10),
-             (long long)(lx + 5), (long long)(ly + 13),
-             (long long)lx, (long long)(ly + 15),
-             (long long)(lx + 5), (long long)(ly + 18),
-             (long long)lx, (long long)(ly + 20),
-             (long long)(lx + 5), (long long)(ly + 23));
-    o += b;
+    auto legend_entry = [&](int row, const char *color, const char *label) {
+        snprintf(b, sizeof(b),
+                 "<rect x=\"%lld\" y=\"%lld\" width=\"4\" height=\"3\" fill=\"%s\"/>\n"
+                 "<text x=\"%lld\" y=\"%lld\" font-family=\"monospace\" font-size=\"3\" "
+                 "fill=\"#aaa\" pointer-events=\"none\">%s</text>\n",
+                 (long long)lx, (long long)(ly + row), color,
+                 (long long)(lx + 5), (long long)(ly + row + 3), label);
+        o += b;
+    };
+    legend_entry(0,  "#d93", "M1");
+    legend_entry(5,  "#66c", "M2");
+    legend_entry(10, "#4a4", "I/O");
+    legend_entry(15, "#c44", "VDD");
+    legend_entry(20, "#44c", "VSS");
 
     // --- die outline ---
     snprintf(b, sizeof(b),
