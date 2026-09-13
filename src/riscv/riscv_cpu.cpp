@@ -6,8 +6,9 @@ static const char *TAG = "riscv";
 void RiscvCpu::reset() {
     pc_ = 0;
     for (int i = 0; i < 32; ++i) regs_[i] = 0;
+    for (int i = 0; i < kCsrCount; ++i) csr_[i] = 0;
     mem_.init(64 * 1024);
-    ESP_LOGI(TAG, "RISC-V CPU reset (32 regs, 64KB RAM)");
+    ESP_LOGI(TAG, "RISC-V CPU reset (32 regs, 64KB RAM, 6 CSRs)");
 }
 
 void RiscvCpu::step() {
@@ -39,6 +40,28 @@ uint32_t RiscvCpu::get_pc() const { return pc_; }
 uint32_t RiscvCpu::get_reg(uint8_t idx) const {
     if (idx < 32) return regs_[idx];
     return 0;
+}
+
+int RiscvCpu::csr_index(uint16_t addr) const {
+    switch (addr) {
+        case 0x300: return 0;  // mstatus
+        case 0x304: return 1;  // mie
+        case 0x340: return 2;  // mscratch
+        case 0x341: return 3;  // mepc
+        case 0x342: return 4;  // mcause
+        case 0x344: return 5;  // mip
+        default: return -1;    // unsupported CSR
+    }
+}
+
+uint32_t RiscvCpu::get_csr(uint16_t addr) const {
+    int idx = csr_index(addr);
+    return (idx >= 0) ? csr_[idx] : 0;
+}
+
+void RiscvCpu::set_csr(uint16_t addr, uint32_t val) {
+    int idx = csr_index(addr);
+    if (idx >= 0) csr_[idx] = val;
 }
 
 static int32_t sign_extend(uint32_t val, int bits) {
@@ -180,6 +203,31 @@ void RiscvCpu::execute(uint32_t instruction) {
             regs_[rd] = pc_ + 4;
             if (rd == 0) regs_[0] = 0;
             pc_ = target;
+            break;
+        }
+        case 0x73: { // SYSTEM: CSR instructions + ECALL/EBREAK
+            uint16_t csr_addr = (instruction >> 20) & 0xFFF;
+            if (funct3 == 0) {
+                // ECALL (imm=0) / EBREAK (imm=1): treat as NOP for now.
+                pc_ += 4;
+            } else {
+                // CSR instructions: CSRRW/CSRRS/CSRRC/CSRRWI/CSRRSI/CSRRCI
+                int idx = csr_index(csr_addr);
+                uint32_t old = (idx >= 0) ? csr_[idx] : 0;
+                uint32_t wval = 0;
+                switch (funct3) {
+                    case 0x1: wval = regs_[rs1]; break;                    // CSRRW
+                    case 0x2: wval = old | regs_[rs1]; break;              // CSRRS
+                    case 0x3: wval = old & ~regs_[rs1]; break;             // CSRRC
+                    case 0x5: wval = rs1; break;                           // CSRRWI (zimm = rs1 field)
+                    case 0x6: wval = old | rs1; break;                     // CSRRSI
+                    case 0x7: wval = old & ~rs1; break;                    // CSRRCI
+                }
+                if (idx >= 0) csr_[idx] = wval;
+                regs_[rd] = old;
+                if (rd == 0) regs_[0] = 0;
+                pc_ += 4;
+            }
             break;
         }
         default:

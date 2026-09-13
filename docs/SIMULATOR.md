@@ -113,22 +113,22 @@ installer paths when `gtkwave` is not on PATH; adding
 
 Run these from the repo root (paths below are root-relative, and the
 binary is `build/vfpga`). Inside a tutorial directory, the short form
-`vfpga verify design.vhdl --tb design.tb --wave --open` works instead —
+`vfpga verify design.v --tb design.tb --wave --open` works instead —
 see each tutorial's README for both variants.
 
 ```bash
-vfpga compile examples/counter.vhdl
-vfpga signals examples/counter.vhdl
-vfpga sim examples/counter.vhdl --wave
-vfpga verify examples/counter.vhdl --wave --open
-vfpga verify examples/tutorial/06_counter/design.vhdl \
+vfpga compile examples/counter.v
+vfpga signals examples/counter.v
+vfpga sim examples/counter.v --wave
+vfpga verify examples/counter.v --wave --open
+vfpga verify examples/tutorial/06_counter/design.v \
     --tb examples/tutorial/06_counter/design.tb --wave --open
 vfpga wave build/waves/counter.vcd
 ```
 
 Tutorials `examples/tutorial/01_..08_`: and_gate, mux, half/full adder,
 register, counter, shift register, toggle FSM each with
-`design.vhdl`, `design.tb`, `README.md`.
+`design.v`, `design.tb`, `README.md`.
 
 ## 5. VCD & GTKWave
 

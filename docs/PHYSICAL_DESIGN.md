@@ -55,8 +55,48 @@ prints the VFPGA-vs-ASIC comparison table.
   named `top/<output net>`.
 - 2 metal layers (M1 horizontal, M2 vertical), L-routing with vias.
 - No BRAM/DSP mapping yet (mapper emits LUT4/FF only).
-- RISC-V physical integration: functional CPU is untouched; block-level
-  floorplan from CPU structure is future work.
+
+## 5a. User CPU Designs
+
+Any HDL design runs through the physical flow:
+
+```bash
+vfpga build my_cpu.v --svg
+```
+
+The ASIC backend maps operators to standard cells (`&` → AND2, etc.),
+places them in rows, routes M1/M2, and exports layout JSON + SVG.
+Designs with <= 8 inputs get exhaustive testing; larger designs need
+manual testbenches.
+
+For RISC-V-like CPUs, the block map overlays functional regions
+(fetch, decode, alu, register_file, branch_unit, memory_interface, csr)
+on the floorplan when the design structure matches. The block map is
+derived from the RV32I opcode encoding — each LUT mapped to an opcode
+class is assigned to its functional block.
+
+Example: a simple ALU + register file design:
+
+```vhdl
+module simple_alu;
+input clock;
+input [2:0] op;
+input [7:0] a, b;
+output [7:0] result;
+register [7:0] acc;
+always @(posedge clock) begin
+    if (op == 0) acc <= a + b;
+    else if (op == 1) acc <= a & b;
+    else if (op == 2) acc <= a | b;
+end
+assign result = acc;
+endmodule
+```
+
+```bash
+vfpga build simple_alu.v --svg
+# -> build/physical/simple_alu.layout.json + .svg
+```
 
 ## 6. Tests
 

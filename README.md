@@ -186,7 +186,7 @@ g++ -std=c++17 -Wall -Isrc/hdl -Ihost_test/stubs \
   -o build/vfpga
 
 # verify a tutorial design and open the waveform
-build/vfpga verify examples/tutorial/06_counter/design.vhdl \
+build/vfpga verify examples/tutorial/06_counter/design.v \
   --tb examples/tutorial/06_counter/design.tb --wave --open
 ```
 

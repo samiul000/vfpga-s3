@@ -4,7 +4,7 @@ How to write and run HDL designs on the ESP32-S3 virtual FPGA.
 
 ## Quick Start
 
-1. Write a `.vhdl` file in the `hdl/` directory
+1. Write a `.v` file in the `hdl/` directory
 2. Paste its content into `src/hdl/hdl_embedded.h` as a C string
 3. Build: `pio run`
 4. Flash: `pio run -t upload`
@@ -15,7 +15,7 @@ The HDL pipeline runs automatically on boot.
 ## Pipeline Architecture
 
 ```
-.vhdl text
+.v text
     |  Lexer (tokenize)
     v
   Tokens

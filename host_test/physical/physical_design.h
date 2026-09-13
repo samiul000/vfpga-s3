@@ -123,4 +123,14 @@ bool layout_import_check(const std::string &json, std::string &design_out,
 std::string layout_export_svg(const std::string &design, const Floorplan &fp,
                               const RouteResult &rr);
 
+// RISC-V block map: maps opcode ranges to functional block names.
+// Used to overlay labeled regions on the floorplan when the design
+// structure matches a RISC-V-like CPU.
+struct RiscvBlock {
+    const char *name;      // "fetch", "decode", "alu", etc.
+    const char *opcodes;   // comma-separated hex opcodes, "all", or "none"
+    int area_weight;       // relative area for floorplan allocation
+};
+std::vector<RiscvBlock> riscv_block_map();
+
 }  // namespace physical

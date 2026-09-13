@@ -730,4 +730,16 @@ std::string layout_export_svg(const std::string &design, const Floorplan &fp,
     return o;
 }
 
+std::vector<RiscvBlock> riscv_block_map() {
+    std::vector<RiscvBlock> m;
+    m.push_back({"fetch", "0x17,0x6F,0x67", 2});          // AUIPC, JAL, JALR
+    m.push_back({"decoder", "all", 3});                     // opcode decode (always)
+    m.push_back({"register_file", "all", 8});               // 32 regs (always)
+    m.push_back({"alu", "0x33,0x13", 10});                  // R-type, I-type arith
+    m.push_back({"branch_unit", "0x63,0x6F,0x67", 4});     // branches + jumps
+    m.push_back({"memory_interface", "0x03,0x23", 5});      // loads, stores
+    m.push_back({"csr", "0x73", 2});                        // CSR instructions
+    return m;
+}
+
 }  // namespace physical

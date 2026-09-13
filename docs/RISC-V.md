@@ -30,7 +30,7 @@
 - 32 general-purpose 32-bit registers (x0 hardwired to 0)
 - 64 KB flat byte-addressable memory (little-endian)
 - MMIO region at `0x10000000` — read/write dispatched to registered callbacks
-- No privilege modes, no CSRs, no interrupts
+- No privilege modes, no interrupts; basic CSR file for educational completeness
 - Unknown opcodes log a warning and advance PC by 4 (no trap)
 
 ---
@@ -369,7 +369,7 @@ void my_demo() {
 | C-extension (compressed) | Not implemented |
 | F/D-extension (float) | Not implemented |
 | Privilege modes | Not implemented |
-| CSR registers | Not implemented |
+| CSR registers | Basic: mstatus, mie, mscratch, mepc, mcause, mip |
 | Interrupts/exceptions | Not implemented |
 | Instruction count limit | Caller-specified via `run(n)` |
 

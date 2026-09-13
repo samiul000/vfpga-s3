@@ -174,6 +174,21 @@ int main() {
         CHECK(same, "placement deterministic by seed");
     }
 
+    // RISC-V block map
+    {
+        std::vector<RiscvBlock> bm = riscv_block_map();
+        CHECK(bm.size() == 7, "riscv_block_map has 7 blocks");
+        bool has_alu = false, has_csr = false, has_fetch = false;
+        for (size_t i = 0; i < bm.size(); ++i) {
+            if (std::string(bm[i].name) == "alu") has_alu = true;
+            if (std::string(bm[i].name) == "csr") has_csr = true;
+            if (std::string(bm[i].name) == "fetch") has_fetch = true;
+        }
+        CHECK(has_alu, "block map contains alu");
+        CHECK(has_csr, "block map contains csr");
+        CHECK(has_fetch, "block map contains fetch");
+    }
+
     if (failures == 0) printf("\nAll physical host tests PASS\n");
     else printf("\n%d physical test(s) FAILED\n", failures);
     return failures;

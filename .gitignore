@@ -50,6 +50,7 @@ desktop.ini
 # Extras
 INSTRUCTION.md
 INSTRUCTION_SIM.md
+INSTRUCTION_Arch.md
 docs/generate_graphics.py
 docs/gen_abstract.py
 host_test/gen_soc_layout.py

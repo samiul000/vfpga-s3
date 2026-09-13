@@ -100,16 +100,16 @@ jobs:
             -o /tmp/vfpga
       - name: CLI smoke over examples
         run: |
-          /tmp/vfpga compile examples/counter.vhdl
-          /tmp/vfpga signals examples/counter.vhdl
-          /tmp/vfpga sim examples/counter.vhdl --wave
-          /tmp/vfpga verify examples/counter.vhdl --wave
+          /tmp/vfpga compile examples/counter.v
+          /tmp/vfpga signals examples/counter.v
+          /tmp/vfpga sim examples/counter.v --wave
+          /tmp/vfpga verify examples/counter.v --wave
           test -f build/waves/counter.vcd
       - name: CLI verify over tutorials
         run: |
           for t in 01_and_gate 02_mux 03_half_adder 04_full_adder \
                    05_register 06_counter 07_shift_register 08_fsm; do
-            /tmp/vfpga verify examples/tutorial/$t/design.vhdl \
+            /tmp/vfpga verify examples/tutorial/$t/design.v \
               --tb examples/tutorial/$t/design.tb --wave || exit 1
           done
       - name: CLI physical flow over examples
